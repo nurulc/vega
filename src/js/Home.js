@@ -1,6 +1,6 @@
 import React, { Component } from "react";
-import { Button, PageHeader } from "react-bootstrap";
-import { Route, NavLink, HashRouter } from "react-router-dom";
+import { Button } from "react-bootstrap";
+import { NavLink } from "react-router-dom";
 const wellStyles = { maxWidth: 500, margin: "25% auto 10px" };
 const buttonStyles = { float: "right", display: "inline", marginLeft: "10px" };
 
