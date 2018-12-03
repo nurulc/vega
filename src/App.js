@@ -8,7 +8,7 @@ import {
   BrowserRouter
 } from "react-router-dom";
 import OpenAnalysis from "./js/OpenAnalysis";
-import CreateAnalysis from "./js/CreateAnalysis";
+import CreateAnalysis from "./js/CreateAnalysis/CreateAnalysis";
 import Home from "./js/Home";
 
 import { PageHeader } from "react-bootstrap";

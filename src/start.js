@@ -13,7 +13,7 @@ ipcMain.on("drop-file", (event, args) => {
       alert("An error ocurred reading the file :" + err.message);
       return;
     } else {
-      console.log("The file content is : " + data);
+      //console.log("The file content is : " + data);
     }
   });
   event.sender.send("asynchronous-reply", args);
