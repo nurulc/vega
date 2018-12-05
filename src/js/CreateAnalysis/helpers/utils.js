@@ -4,7 +4,3 @@ export const getFileType = file => {
   var index = fileName.lastIndexOf(".");
   return fileName.substring(index + 1);
 };
-
-export const parseIntoJson = () => {
-  console.log(this.state);
-};

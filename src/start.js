@@ -1,22 +1,25 @@
-const { app, BrowserWindow, ipcMain } = require("electron");
-var fs = require("fs");
+const {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
-
+import {isCorrectExt, isFileReadable} from "./resources/utils.js";
+import {Messages} from "./js/Alerts/ErrorConsts";
 let mainWindow;
 
-ipcMain.on("drop-file", (event, args) => {
-  console.log("drop file");
+ipcMain.on("action-dropFile", (event, args) => {
   var path = args.path;
-  fs.readFile(path, "utf-8", (err, data) => {
-    if (err) {
-      alert("An error ocurred reading the file :" + err.message);
-      return;
-    } else {
-      //console.log("The file content is : " + data);
-    }
-  });
-  event.sender.send("asynchronous-reply", args);
+
+  if (!isCorrectExt(args)) {
+    //create error, wrong ext
+    event.sender.send("error-WithMsg", Messages.errorWrongFileExt);
+  } else if (!isFileReadable(path)) {
+    //create error, not readable
+    event.sender.send("error-WithMsg", Messages.errorNotReadable);
+  } else if (!doesFileExist(path)) {
+    //create error, path does not exist
+    event.sender.send("error-WithMsg", Messages.errorBadFilePath);
+  } else {
+    event.sender.send("confirmed-correctFilePath", args);
+  }
 });
 
 function createWindow() {

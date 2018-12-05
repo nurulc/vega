@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, {Component} from "react";
 import "./App.css";
 import {
   Route,
@@ -10,13 +10,15 @@ import {
 import OpenAnalysis from "./js/OpenAnalysis";
 import CreateAnalysis from "./js/CreateAnalysis/CreateAnalysis";
 import Home from "./js/Home";
+import {PageHeader} from "react-bootstrap";
+import Alert from "./js/Alerts/Alerts";
 
-import { PageHeader } from "react-bootstrap";
 class App extends Component {
   render() {
     return (
       <HashRouter>
         <div>
+          <Alert />
           <PageHeader>Lyra</PageHeader>
           <div className="content">
             <BrowserRouter>
@@ -33,4 +35,5 @@ class App extends Component {
     );
   }
 }
+
 export default App;

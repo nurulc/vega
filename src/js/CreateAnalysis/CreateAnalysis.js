@@ -2,10 +2,9 @@ import React, {Component} from "react";
 import isElectron from "is-electron";
 import {Button} from "react-bootstrap";
 import FileSelection from "./Components/FileSelection.js";
+
 import {
-  setActionOnDragOver,
-  setActionOnDrop,
-  setIpcReplies
+  setUserActions
 } from "./helpers/actions.js";
 const ipcRenderer = window.ipcRenderer;
 
@@ -13,6 +12,7 @@ const wellStyles = {
   maxWidth: 500,
   margin: "25% auto 10px"
 };
+
 const buttonStyles = {
   float: "right",
   display: "inline",
@@ -25,14 +25,13 @@ class CreateAnalysis extends Component {
     this.state = {
       csv: {filePaths: null},
       gml: {filePaths: null}
-    };
   }
+}
 
  setFileList = (type, newFile) => {
    let currState = {...this.state[type]};
    currState.filePaths = currState.filePaths === null ? [newFile] : [...currState.filePaths, newFile];
    this.setState({[type]:currState})
-   console.log(this.state)
   };
 
   componentDidMount() {
@@ -40,17 +39,15 @@ class CreateAnalysis extends Component {
 
       var dragFilesHolder = document.getElementById("drag-file");
 
-      ipcRenderer.on("asynchronous-reply", (event, args) => {
+      ipcRenderer.on("confirmed-correctFilePath", (event, args) => {
         this.setFileList(args.target, args.path);
-        console.log(this.state)
-        //parseIntoJson();
       });
 
-      setActionOnDragOver(dragFilesHolder);
-      setActionOnDrop(dragFilesHolder, ipcRenderer);
+      setUserActions(dragFilesHolder, ipcRenderer);
 
     }
   }
+
   render() {
     const gmlComponent =
       this.state.gml.filePaths === null ? (
