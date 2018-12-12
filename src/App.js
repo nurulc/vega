@@ -19,7 +19,6 @@ class App extends Component {
       <HashRouter>
         <div>
           <Alert />
-          <PageHeader>Lyra</PageHeader>
           <div className="content">
             <BrowserRouter>
               <Switch>

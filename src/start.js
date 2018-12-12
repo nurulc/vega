@@ -1,31 +1,25 @@
 const {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
-import {isCorrectExt, isFileReadable} from "./resources/utils.js";
-import {Messages} from "./js/Alerts/ErrorConsts";
+import {checkForErrors, fileParsing} from "./resources/mainHelpers.js";
 let mainWindow;
 
-ipcMain.on("action-dropFile", (event, args) => {
-  var path = args.path;
-
-  if (!isCorrectExt(args)) {
-    //create error, wrong ext
-    event.sender.send("error-WithMsg", Messages.errorWrongFileExt);
-  } else if (!isFileReadable(path)) {
-    //create error, not readable
-    event.sender.send("error-WithMsg", Messages.errorNotReadable);
-  } else if (!doesFileExist(path)) {
-    //create error, path does not exist
-    event.sender.send("error-WithMsg", Messages.errorBadFilePath);
+//Send out an error alert
+ipcMain.on("checkForFileErrors", (event, params) => {
+  var errors = checkForErrors(params);
+  if (errors) {
+    event.sender.send("error-WithMsg", errors);
   } else {
-    event.sender.send("confirmed-correctFilePath", args);
+    fileParsing(event, params);
+    //event.sender.send("confirmed-correctFilePath", params.args);
+    //event.sender.send("confirmed-correctFilePath", params.args);
   }
 });
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 800,
     webPreferences: {
       nodeIntegration: false,
       preload: __dirname + "/resources/preload.js"

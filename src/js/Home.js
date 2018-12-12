@@ -1,31 +1,72 @@
 import React, {Component} from "react";
-import {Button} from "react-bootstrap";
+import {Well} from "react-bootstrap";
+import {
+  Button,
+  ButtonDropdown,
+  ButtonGroup,
+  DropdownToggle,
+  DropdownMenu,
+  DropdownItem
+} from "reactstrap";
+import {config} from "../resources/config";
 import {NavLink} from "react-router-dom";
 const wellStyles = {
-  maxWidth: 500,
-  margin: "25% auto 10px"
+  position: "absolute",
+  top: "40%",
+  left: "25%"
 };
 const buttonStyles = {
-  float: "right",
-  display: "inline",
-  marginLeft: "10px"
+  marginRight: "50px"
 };
 
 class Home extends Component {
+  constructor(props) {
+    super(props);
+    this.toggle = this.toggle.bind(this);
+    this.state = {
+      dropdownOpen: false
+    };
+  }
+
+  toggle() {
+    this.setState({
+      dropdownOpen: !this.state.dropdownOpen
+    });
+  }
+
   render() {
+    const dropDownItems = config.dashboards.map(dashboard => {
+      var newTo = {
+        pathname: "/CreateAnalysis",
+        state: {dashboard}
+      };
+      return (
+        <DropdownItem header>
+          <NavLink to={newTo}>{dashboard.name}</NavLink>
+        </DropdownItem>
+      );
+    });
+
     return (
-      <div className="well" style={wellStyles}>
+      <ButtonGroup style={wellStyles}>
         <NavLink to="/OpenAnalysis">
-          <Button bsSize="large" bsStyle="primary">
+          <Button color="primary" size="lg" style={buttonStyles}>
             Open Existing Analysis{" "}
           </Button>{" "}
         </NavLink>{" "}
-        <NavLink to="/CreateAnalysis">
-          <Button bsSize="large" bsStyle="primary" style={buttonStyles}>
-            Create New Analysis{" "}
-          </Button>{" "}
-        </NavLink>{" "}
-      </div>
+        <ButtonDropdown
+          size="lg"
+          isOpen={this.state.dropdownOpen}
+          toggle={this.toggle}
+          direction="down"
+          style={buttonStyles}
+        >
+          <DropdownToggle caret color="info">
+            Create New Analysis
+          </DropdownToggle>
+          <DropdownMenu right>{dropDownItems}</DropdownMenu>
+        </ButtonDropdown>
+      </ButtonGroup>
     );
   }
 }
