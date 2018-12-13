@@ -7,10 +7,10 @@ import {
   Redirect,
   BrowserRouter
 } from "react-router-dom";
-import OpenAnalysis from "./js/OpenAnalysis";
+import OpenAnalysis from "./js/OpenAnalysis/OpenAnalysis";
 import CreateAnalysis from "./js/CreateAnalysis/CreateAnalysis";
+import MetaDataInput from "./js/MetaDataInput/MetaDataInput";
 import Home from "./js/Home";
-import {PageHeader} from "react-bootstrap";
 import Alert from "./js/Alerts/Alerts";
 
 class App extends Component {
@@ -25,6 +25,7 @@ class App extends Component {
                 <Route exact path="/Home" component={Home} />
                 <Route path="/OpenAnalysis" component={OpenAnalysis} />
                 <Route path="/CreateAnalysis" component={CreateAnalysis} />
+                <Route path="/MetaDataInput" component={MetaDataInput} />
                 <Redirect to="/Home" push />
               </Switch>
             </BrowserRouter>

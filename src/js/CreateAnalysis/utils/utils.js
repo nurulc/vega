@@ -1,6 +1,13 @@
-import {getFileType} from "./utils.js";
 import {inputConfig} from "../../../resources/config.js";
 
+//Retrieve file extension from a given file path
+export const getFileType = file => {
+  var fileName = file.name;
+  var index = fileName.lastIndexOf(".");
+  return fileName.substring(index + 1);
+};
+
+//Retreive the appropriate arguments for the file being opened
 export const getFileArgs = e => {
   e.preventDefault();
   var dropTargetType =
@@ -16,15 +23,4 @@ export const getFileArgs = e => {
     target: dropTargetType,
     ext: fileType
   };
-};
-export const canProceedToMeta = inputs => {
-  var canContinue = true;
-  inputs.map(inputObj => {
-    const filePaths = this.state.filePaths[inputObj.type];
-    const minFileCount = inputConfig[inputObj.type].minFiles;
-    if (filePaths.length < minFileCount) {
-      canContinue = false;
-    }
-  });
-  return canContinue;
 };

@@ -1,5 +1,4 @@
 import React, {Component} from "react";
-import {Well} from "react-bootstrap";
 import {
   Button,
   ButtonDropdown,
@@ -10,6 +9,7 @@ import {
 } from "reactstrap";
 import {config} from "../resources/config";
 import {NavLink} from "react-router-dom";
+
 const wellStyles = {
   position: "absolute",
   top: "40%",

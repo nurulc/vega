@@ -3,7 +3,7 @@ import {ListGroupItem} from "react-bootstrap";
 var closeButtonStyle = {
   float: "right"
 };
-class FileSelectionPanel extends Component {
+class SelectedFileList extends Component {
   constructor(props) {
     super(props);
   }
@@ -23,4 +23,4 @@ class FileSelectionPanel extends Component {
     );
   }
 }
-export default FileSelectionPanel;
+export default SelectedFileList;

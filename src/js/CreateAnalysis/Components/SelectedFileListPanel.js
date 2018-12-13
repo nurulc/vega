@@ -1,8 +1,8 @@
 import React, {Component} from "react";
 import {Panel, ListGroup} from "react-bootstrap";
-import FileSelectionPanel from "./FileSelectionPanel";
+import SelectedFileList from "./SelectedFileList";
 
-class FileSelection extends Component {
+class FileListPanel extends Component {
   constructor(props) {
     super(props);
     this.handleDelete = this.handleDelete.bind(this);
@@ -15,7 +15,7 @@ class FileSelection extends Component {
   render() {
     const {choosenFiles, type, id, dragtype} = this.props;
     const selectionText = choosenFiles.map(fileName => (
-      <FileSelectionPanel
+      <SelectedFileList
         fileName={fileName}
         dragtype={dragtype}
         handleDelete={() => this.handleDelete(fileName, dragtype)}
@@ -32,4 +32,5 @@ class FileSelection extends Component {
     );
   }
 }
-export default FileSelection;
+
+export default FileListPanel;

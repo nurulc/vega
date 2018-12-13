@@ -1,20 +1,21 @@
 const {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
-import {checkForErrors, fileParsing} from "./resources/mainHelpers.js";
+import {checkForFileErrors, fileParsing} from "./resources/utils.js";
 let mainWindow;
 
 //Send out an error alert
 ipcMain.on("checkForFileErrors", (event, params) => {
-  var errors = checkForErrors(params);
+  var errors = checkForFileErrors(params);
   if (errors) {
     event.sender.send("error-WithMsg", errors);
   } else {
     fileParsing(event, params);
-    //event.sender.send("confirmed-correctFilePath", params.args);
-    //event.sender.send("confirmed-correctFilePath", params.args);
   }
 });
+
+//Create a new instance in the DB
+ipcMain.on("createNewAnalysis", (event, params) => {});
 
 function createWindow() {
   mainWindow = new BrowserWindow({

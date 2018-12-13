@@ -5,7 +5,7 @@ import {Messages} from "../js/Alerts/ErrorConsts";
 import {inputConfig} from "./config";
 var Papa = require("papaparse");
 
-export const checkForErrors = params => {
+export const checkForFileErrors = params => {
   var args = params.args;
   var errorMsg = null;
   if (!isCorrectExt(args)) {
