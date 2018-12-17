@@ -33,7 +33,8 @@ class MetaDataInput extends Component {
     this.state = {
       name: "",
       descripton: "",
-      canContinue: false
+      canContinue: false,
+      filePaths: this.props.location.state.filePaths
     };
   }
   componentDidMount() {
@@ -49,22 +50,20 @@ class MetaDataInput extends Component {
   }
 
   setName(e) {
+    //  var continue = e.target.value.length > 2 ? true : false;
     this.setState({
-      name: e.target.value
+      name: e.target.value,
+      canContinue: e.target.value.length > 2
     });
-    if (this.state.name.length > 2) {
-      //check in db if name exists
-      this.setState({
-        canContinue: true
-      });
-    }
   }
+
   setDescription(e) {
     this.setState({
       description: e.target.value
     });
   }
   createNewAnalysis = () => {
+    console.log(this.state);
     ipcRenderer.send("createNewAnalysis", this.state);
   };
   render() {
