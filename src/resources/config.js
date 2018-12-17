@@ -19,31 +19,20 @@ export const config = {
     {
       name: "Lyra Dashboard",
       input: [inputConfig.segment, inputConfig.tree],
-      filePaths: {segment: [], tree: []}
+      filePaths: {segment: [], tree: []},
+      databasePaths: {
+        files: "/src/database/db/files.db",
+        anaylsis: "/src/database/db/anaylsis.db",
+        relations: "/src/database/db/relations.db"
+      }
     }
   ]
 };
 
-export const pappaParseConfig = {
-  delimiter: "", // auto-detect
-  newline: "", // auto-detect
-  quoteChar: '"',
-  escapeChar: '"',
-  header: true,
-  transformHeader: undefined,
-  dynamicTyping: false,
-  preview: 0,
-  encoding: "",
-  worker: false,
-  comments: false,
-  step: undefined,
-  complete: undefined,
-  error: undefined,
-  download: false,
-  skipEmptyLines: false,
-  chunk: undefined,
-  fastMode: undefined,
-  beforeFirstChunk: undefined,
-  withCredentials: undefined,
-  transform: undefined
+export const projectColours = {
+  color1: "0, 16, 17, 1",
+  color2: "9, 58, 62, 1",
+  color3: "58, 175, 185, 1",
+  color4: "182, 235, 237, 1",
+  color5: "159, 203, 234, 1"
 };
