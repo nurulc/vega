@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React, {Component, ReactChildren} from "react";
 import {inputConfig} from "../../resources/config.js";
 import isElectron from "is-electron";
 import {Button} from "react-bootstrap";
@@ -19,7 +19,7 @@ class CreateAnalysis extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      ...props.location.state.dashboard,
+      ...props.location.state.dashboardConfig,
       proceedToMeta: false
     };
   }
@@ -91,8 +91,16 @@ class CreateAnalysis extends Component {
       });
     }
   }
-
   render() {
+    //const renderChildren = state => {
+    //<DropComponents state={this.state} setFileList={this.setFileList} />
+    //return ReactChildren.map(state.children, child => {
+    //    return React.cloneElement(child, {
+    //      setFileList: this.setFileList,
+    //      props: this.state
+    //    });
+    //  });
+    //};
     //If min # of files reached add the next button
     var continueButton = "";
     if (this.state.proceedToMeta) {
