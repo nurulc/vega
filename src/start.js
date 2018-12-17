@@ -2,6 +2,7 @@ const {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
 import {checkForFileErrors, fileParsing} from "./resources/utils.js";
+import {createDbAnalyis} from "./database/utils.js";
 let mainWindow;
 
 //Send out an error alert
@@ -15,7 +16,18 @@ ipcMain.on("checkForFileErrors", (event, params) => {
 });
 
 //Create a new instance in the DB
-ipcMain.on("createNewAnalysis", (event, params) => {});
+ipcMain.on("createNewAnalysis", (event, params) => {
+  createDbAnalyis(params, event);
+  //event.sender.send("analysisAdded", listObj);
+  //var analysisObj = {
+  //  name: params.name,
+  //  descripton: params.descripton
+  //};
+  //var errors = checkForDBErrors(params);
+  //  AnalysisTable.insert(analysisObj, function(err, doc) {
+  //    event.sender.send("analysisAdded", doc);
+  //  });
+});
 
 function createWindow() {
   mainWindow = new BrowserWindow({

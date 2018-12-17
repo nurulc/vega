@@ -14,25 +14,21 @@ export const inputConfig = {
     minFiles: 1
   }
 };
-export const config = {
-  dashboards: [
-    {
-      name: "Lyra Dashboard",
-      input: [inputConfig.segment, inputConfig.tree],
-      filePaths: {segment: [], tree: []},
-      databasePaths: {
-        files: "/src/database/db/files.db",
-        anaylsis: "/src/database/db/anaylsis.db",
-        relations: "/src/database/db/relations.db"
-      }
-    }
-  ]
+export const dashboardConfig = {
+  name: "Lyra Dashboard",
+  input: [inputConfig.segment, inputConfig.tree],
+  filePaths: {segment: [], tree: []},
+  databasePaths: {
+    files: "/src/database/db/files.db",
+    anaylsis: "/src/database/db/anaylsis.db",
+    relations: "/src/database/db/relations.db"
+  }
 };
 
 export const projectColours = {
-  color1: "0, 16, 17, 1",
-  color2: "9, 58, 62, 1",
-  color3: "58, 175, 185, 1",
-  color4: "182, 235, 237, 1",
-  color5: "159, 203, 234, 1"
+  colour1: "#001011",
+  colour2: "#003333",
+  colour3: "#3399cc",
+  colour4: "#b6ebed",
+  colour5: "#9fcbea"
 };

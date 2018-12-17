@@ -1,11 +1,15 @@
 var Datastore = require("nedb");
-import config from "../resources/config";
+import {dashboardConfig} from "../resources/config.js";
 var appRoot = require("app-root-path");
 
 var database = {};
-database.files = new Datastore(appRoot + config.databasePaths.files);
-database.analysis = new Datastore(appRoot + config.databasePaths.analysis);
-database.relations = new Datastore(appRoot + config.databasePaths.relations);
+database.files = new Datastore(appRoot + dashboardConfig.databasePaths.files);
+database.analysis = new Datastore(
+  appRoot + dashboardConfig.databasePaths.analysis
+);
+database.relations = new Datastore(
+  appRoot + dashboardConfig.databasePaths.relations
+);
 
 export const createDbAnalyis = (params, event) => {
   database.files.loadDatabase();

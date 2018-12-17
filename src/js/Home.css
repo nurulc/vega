@@ -1,0 +1,4 @@
+.content .btn:hover{
+  border-color: #001011;
+  box-shadow: 0 0 16px rgba(0, 16, 17, 0.6);
+}

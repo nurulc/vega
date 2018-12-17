@@ -7,67 +7,42 @@ import {
   DropdownMenu,
   DropdownItem
 } from "reactstrap";
-import {config} from "../resources/config";
+import {dashboardConfig, projectColours} from "../resources/config";
 import {NavLink} from "react-router-dom";
+import "./Home.css";
 
 const wellStyles = {
   position: "absolute",
   top: "40%",
   left: "25%"
 };
+
 const buttonStyles = {
-  marginRight: "50px"
+  padding: "25px",
+  marginRight: "50px",
+  backgroundColor: [projectColours.colour3],
+  borderColor: [projectColours.colour1]
 };
 
-class Home extends Component {
-  constructor(props) {
-    super(props);
-    this.toggle = this.toggle.bind(this);
-    this.state = {
-      dropdownOpen: false
-    };
-  }
-
-  toggle() {
-    this.setState({
-      dropdownOpen: !this.state.dropdownOpen
-    });
-  }
-
-  render() {
-    const dropDownItems = config.dashboards.map(dashboard => {
-      var newTo = {
-        pathname: "/CreateAnalysis",
-        state: {dashboard}
-      };
-      return (
-        <DropdownItem header>
-          <NavLink to={newTo}>{dashboard.name}</NavLink>
-        </DropdownItem>
-      );
-    });
-
-    return (
-      <ButtonGroup style={wellStyles}>
-        <NavLink to="/OpenAnalysis">
-          <Button color="primary" size="lg" style={buttonStyles}>
-            Open Existing Analysis{" "}
-          </Button>{" "}
-        </NavLink>{" "}
-        <ButtonDropdown
-          size="lg"
-          isOpen={this.state.dropdownOpen}
-          toggle={this.toggle}
-          direction="down"
-          style={buttonStyles}
-        >
-          <DropdownToggle caret color="info">
-            Create New Analysis
-          </DropdownToggle>
-          <DropdownMenu right>{dropDownItems}</DropdownMenu>
-        </ButtonDropdown>
-      </ButtonGroup>
-    );
-  }
-}
+const Home = () => {
+  return (
+    <ButtonGroup style={wellStyles}>
+      <NavLink to="/OpenAnalysis">
+        <Button color="primary" size="lg" style={buttonStyles}>
+          Open Existing Analysis{" "}
+        </Button>{" "}
+      </NavLink>{" "}
+      <NavLink
+        to={{
+          pathname: "/CreateAnalysis",
+          state: {dashboardConfig}
+        }}
+      >
+        <Button color="primary" size="lg" style={buttonStyles}>
+          Create New Analysis{" "}
+        </Button>{" "}
+      </NavLink>{" "}
+    </ButtonGroup>
+  );
+};
 export default Home;
