@@ -3,24 +3,18 @@ import {ListGroupItem} from "react-bootstrap";
 var closeButtonStyle = {
   float: "right"
 };
-class SelectedFileList extends Component {
-  constructor(props) {
-    super(props);
-  }
-  render() {
-    const {fileName} = this.props;
-    return (
-      <ListGroupItem>
-        {fileName}
-        <span
-          aria-hidden="true"
-          onClick={this.props.handleDelete}
-          style={closeButtonStyle}
-        >
-          &times;
-        </span>
-      </ListGroupItem>
-    );
-  }
-}
+const SelectedFileList = props => {
+  return (
+    <ListGroupItem>
+      {props.fileName}
+      <span
+        aria-hidden="true"
+        onClick={props.handleDelete}
+        style={closeButtonStyle}
+      >
+        &times;
+      </span>
+    </ListGroupItem>
+  );
+};
 export default SelectedFileList;

@@ -5,6 +5,7 @@
   "dependencies": {
     "@babel/polyfill": "^7.0.0",
     "app": "^0.1.0",
+    "app-root-path": "^2.1.0",
     "browser-window": "^0.4.0",
     "camo": "^0.12.3",
     "d3": "^5.7.0",

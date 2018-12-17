@@ -14,36 +14,21 @@ export const inputConfig = {
     minFiles: 1
   }
 };
-export const config = {
-  dashboards: [
-    {
-      name: "Lyra Dashboard",
-      input: [inputConfig.segment, inputConfig.tree],
-      filePaths: {segment: [], tree: []}
-    }
-  ]
+export const dashboardConfig = {
+  name: "Lyra Dashboard",
+  input: [inputConfig.segment, inputConfig.tree],
+  filePaths: {segment: [], tree: []},
+  databasePaths: {
+    files: "/src/database/db/files.db",
+    anaylsis: "/src/database/db/anaylsis.db",
+    relations: "/src/database/db/relations.db"
+  }
 };
 
-export const pappaParseConfig = {
-  delimiter: "", // auto-detect
-  newline: "", // auto-detect
-  quoteChar: '"',
-  escapeChar: '"',
-  header: true,
-  transformHeader: undefined,
-  dynamicTyping: false,
-  preview: 0,
-  encoding: "",
-  worker: false,
-  comments: false,
-  step: undefined,
-  complete: undefined,
-  error: undefined,
-  download: false,
-  skipEmptyLines: false,
-  chunk: undefined,
-  fastMode: undefined,
-  beforeFirstChunk: undefined,
-  withCredentials: undefined,
-  transform: undefined
+export const projectColours = {
+  colour1: "#001011",
+  colour2: "#003333",
+  colour3: "#3399cc",
+  colour4: "#b6ebed",
+  colour5: "#9fcbea"
 };
