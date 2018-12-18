@@ -92,15 +92,6 @@ class CreateAnalysis extends Component {
     }
   }
   render() {
-    //const renderChildren = state => {
-    //<DropComponents state={this.state} setFileList={this.setFileList} />
-    //return ReactChildren.map(state.children, child => {
-    //    return React.cloneElement(child, {
-    //      setFileList: this.setFileList,
-    //      props: this.state
-    //    });
-    //  });
-    //};
     //If min # of files reached add the next button
     var continueButton = "";
     if (this.state.proceedToMeta) {
