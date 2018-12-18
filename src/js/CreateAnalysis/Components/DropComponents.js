@@ -14,47 +14,41 @@ var wellStyles = {
   boxShadow: "inset 0 1px 1px rgba(0,0,0,.05)"
 };
 
-class DropComponents extends Component {
-  constructor(props) {
-    super(props);
-  }
+const DropComponents = props => {
+  const {state} = props;
+  //Create a boxed component for the user to drop and delete files
+  const dropComponents = state.input.map(inputObj => {
+    const filePaths = state.filePaths[inputObj.type];
 
-  render() {
-    const {state} = this.props;
-    //Create a boxed component for the user to drop and delete files
-    const dropComponents = state.input.map(inputObj => {
-      const filePaths = state.filePaths[inputObj.type];
-
-      var fileListComponent = "";
-      if (filePaths.length !== 0) {
-        fileListComponent = (
-          <SelectedFileListPanel
-            choosenFiles={state.filePaths[inputObj.type]}
-            dragtype={inputObj.type}
-            onDelete={(file, type) => this.props.setFileList(type, file, true)}
-          />
-        );
-      }
-
-      const header = (
-        <PageHeader color="light" dragtype={inputObj.type}>
-          <small>Drag and drop {inputObj.type} files here </small>
-        </PageHeader>
+    var fileListComponent = "";
+    if (filePaths.length !== 0) {
+      fileListComponent = (
+        <SelectedFileListPanel
+          choosenFiles={state.filePaths[inputObj.type]}
+          dragtype={inputObj.type}
+          onDelete={(file, type) => props.setFileList(type, file, true)}
+        />
       );
-      //Entire drop component with box outline
-      return (
-        <div
-          className="well dragWells"
-          dragType={inputObj.type}
-          style={wellStyles}
-        >
-          {" "}
-          {header} {fileListComponent}
-        </div>
-      );
-    });
-    return dropComponents;
-  }
-}
+    }
+
+    const header = (
+      <PageHeader color="light" dragtype={inputObj.type}>
+        <small>Drag and drop {inputObj.type} files here </small>
+      </PageHeader>
+    );
+    //Entire drop component with box outline
+    return (
+      <div
+        className="well dragWells"
+        dragType={inputObj.type}
+        style={wellStyles}
+      >
+        {" "}
+        {header} {fileListComponent}
+      </div>
+    );
+  });
+  return dropComponents;
+};
 
 export default DropComponents;
