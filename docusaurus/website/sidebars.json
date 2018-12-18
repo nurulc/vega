@@ -1,5 +1,7 @@
 {
   "docs": {
-    "Overview": ["goals", "requirements"]
+    "Overview": ["goals", "requirements"],
+    "User Stories": ["us-desktop", "us-lyra"],
+    "Diagrams": ["system-architecture", "db-architecture", "front-architecture"]
   }
 }
