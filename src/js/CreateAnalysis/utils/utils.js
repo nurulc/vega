@@ -1,5 +1,3 @@
-import {inputConfig} from "../../../resources/config.js";
-
 //Retrieve file extension from a given file path
 export const getFileType = file => {
   var fileName = file.name;

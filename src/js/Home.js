@@ -1,12 +1,5 @@
-import React, {Component} from "react";
-import {
-  Button,
-  ButtonDropdown,
-  ButtonGroup,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem
-} from "reactstrap";
+import React from "react";
+import {Button, ButtonGroup} from "reactstrap";
 import {dashboardConfig, projectColours} from "../resources/config";
 import {NavLink} from "react-router-dom";
 import "./Home.css";

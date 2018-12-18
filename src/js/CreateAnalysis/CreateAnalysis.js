@@ -1,4 +1,4 @@
-import React, {Component, ReactChildren} from "react";
+import React, {Component} from "react";
 import {inputConfig} from "../../resources/config.js";
 import isElectron from "is-electron";
 import {Button} from "react-bootstrap";

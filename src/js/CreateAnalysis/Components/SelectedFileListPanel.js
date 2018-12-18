@@ -1,4 +1,4 @@
-import React, {Component} from "react";
+import React from "react";
 import {Panel, ListGroup} from "react-bootstrap";
 import SelectedFileList from "./SelectedFileList";
 

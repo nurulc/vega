@@ -1,5 +1,4 @@
 import React, {Component} from "react";
-import {Panel, ListGroup} from "react-bootstrap";
 import SelectedFileListPanel from "./SelectedFileListPanel";
 import {PageHeader} from "react-bootstrap";
 
