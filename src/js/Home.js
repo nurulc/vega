@@ -7,12 +7,12 @@ import "./Home.css";
 const wellStyles = {
   position: "absolute",
   top: "40%",
-  left: "25%"
+  left: "15%"
 };
 
 const buttonStyles = {
   padding: "25px",
-  marginRight: "50px",
+  marginRight: "180px",
   backgroundColor: [projectColours.colour3],
   borderColor: [projectColours.colour1]
 };
@@ -25,12 +25,7 @@ const Home = () => {
           Open Existing Analysis{" "}
         </Button>{" "}
       </NavLink>{" "}
-      <NavLink
-        to={{
-          pathname: "/CreateAnalysis",
-          state: {dashboardConfig}
-        }}
-      >
+      <NavLink to="/CreateAnalysis">
         <Button color="primary" size="lg" style={buttonStyles}>
           Create New Analysis{" "}
         </Button>{" "}

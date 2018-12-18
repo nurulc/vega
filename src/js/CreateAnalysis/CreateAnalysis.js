@@ -1,8 +1,12 @@
 import React, {Component} from "react";
-import {inputConfig} from "../../resources/config.js";
+import {inputConfig, dashboardConfig} from "../../resources/config.js";
 import isElectron from "is-electron";
 import {Button} from "react-bootstrap";
+
 import DropComponents from "./Components/DropComponents.js";
+import SelectedFileListPanel from "./Components/SelectedFileListPanel.js";
+import SelectedFileList from "./Components/SelectedFileList";
+
 import {NavLink} from "react-router-dom";
 import {getFileArgs} from "./utils/utils.js";
 
@@ -19,7 +23,7 @@ class CreateAnalysis extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      ...props.location.state.dashboardConfig,
+      ...dashboardConfig,
       proceedToMeta: false
     };
   }
@@ -38,8 +42,11 @@ class CreateAnalysis extends Component {
       this.setState({proceedToMeta: canContinue});
     }
   };
+  onDelete = (fileName, type) => {
+    this.setFileList(fileName, type, true);
+  };
   //File added to list
-  setFileList = (type, file, removeFromList) => {
+  setFileList = (file, type, removeFromList) => {
     let currStatePaths = {...this.state.filePaths};
     //Either remove or add the file to the list
     if (removeFromList) {
@@ -54,13 +61,14 @@ class CreateAnalysis extends Component {
     }
     //Set the new state
     this.setState({filePaths: currStatePaths});
+    this.setCanProceedToMeta(this.state.input);
   };
 
   componentDidMount() {
     if (isElectron()) {
       //Handle correct file path
       ipcRenderer.on("confirmed-correctFilePath", (event, args) => {
-        this.setFileList(args.target, args.path);
+        this.setFileList(args.path, args.target);
         this.setCanProceedToMeta(this.state.input);
       });
 
@@ -112,7 +120,15 @@ class CreateAnalysis extends Component {
     return (
       <div>
         <div id="drag-file" style={{display: "flex"}}>
-          <DropComponents state={this.state} setFileList={this.setFileList} />
+          <DropComponents
+            input={this.state.input}
+            fileList={this.state.filePaths}
+            onDelete={this.onDelete}
+          >
+            <SelectedFileListPanel>
+              <SelectedFileList />
+            </SelectedFileListPanel>
+          </DropComponents>
         </div>
         {continueButton}
       </div>

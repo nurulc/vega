@@ -9,7 +9,7 @@ const SelectedFileList = props => {
       {props.fileName}
       <span
         aria-hidden="true"
-        onClick={props.handleDelete}
+        onClick={props.onDelete}
         style={closeButtonStyle}
       >
         &times;

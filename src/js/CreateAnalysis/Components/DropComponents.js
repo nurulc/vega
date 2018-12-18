@@ -6,29 +6,32 @@ var wellStyles = {
   width: "40%",
   margin: "2.5% 5% 10% 5%",
   textAlign: "center",
+  //height: "80%",
   padding: "0% 2% 40% 2%",
-  marginBottom: "20px",
-  backgroundColor: "#f5f5f5",
-  border: "2px dashed #e3e3e3",
+  backgroundColor: "white",
+  border: "1px dashed #e3e3e3",
   borderRadius: "4px",
   boxShadow: "inset 0 1px 1px rgba(0,0,0,.05)"
 };
 
 const DropComponents = props => {
-  const {state} = props;
+  const {input, fileList} = props;
   //Create a boxed component for the user to drop and delete files
-  const dropComponents = state.input.map(inputObj => {
-    const filePaths = state.filePaths[inputObj.type];
+  const dropComponents = input.map(inputObj => {
+    const filePaths = fileList[inputObj.type];
 
-    var fileListComponent = "";
+    var childrenWithMoreProps = "";
+    //If there are any already selected files
     if (filePaths.length !== 0) {
-      fileListComponent = (
-        <SelectedFileListPanel
-          choosenFiles={state.filePaths[inputObj.type]}
-          dragtype={inputObj.type}
-          onDelete={(file, type) => props.setFileList(type, file, true)}
-        />
-      );
+      childrenWithMoreProps = React.Children.map(props.children, child => {
+        if (child.type === SelectedFileListPanel) {
+          return React.cloneElement(child, {
+            choosenFiles: filePaths,
+            dragType: inputObj.type,
+            onDelete: (fileName, type) => props.onDelete(fileName, type)
+          });
+        }
+      });
     }
 
     const header = (
@@ -44,7 +47,7 @@ const DropComponents = props => {
         style={wellStyles}
       >
         {" "}
-        {header} {fileListComponent}
+        {header} {childrenWithMoreProps}
       </div>
     );
   });

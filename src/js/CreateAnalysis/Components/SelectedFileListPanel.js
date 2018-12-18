@@ -3,18 +3,23 @@ import {Panel, ListGroup} from "react-bootstrap";
 import SelectedFileList from "./SelectedFileList";
 
 const SelectedFileListPanel = props => {
-  const {choosenFiles, dragtype} = props;
-  const selectionText = choosenFiles.map(fileName => (
-    <SelectedFileList
-      fileName={fileName}
-      handleDelete={() => props.onDelete(fileName, dragtype)}
-    />
-  ));
+  const {choosenFiles, dragType} = props;
+
+  const selectedPanel = choosenFiles.map(fileName => {
+    return React.Children.map(props.children, child => {
+      if (child.type === SelectedFileList) {
+        return React.cloneElement(child, {
+          fileName: fileName,
+          onDelete: () => props.onDelete(fileName, props.dragType)
+        });
+      }
+    });
+  });
 
   return (
-    <Panel dragtype={dragtype}>
-      <Panel.Heading>Selected {dragtype}</Panel.Heading>
-      <ListGroup dragtype={dragtype}>{selectionText}</ListGroup>
+    <Panel dragtype={dragType}>
+      <Panel.Heading>Selected {dragType} files</Panel.Heading>
+      <ListGroup dragtype={dragType}>{selectedPanel}</ListGroup>
     </Panel>
   );
 };
