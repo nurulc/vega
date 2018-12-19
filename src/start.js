@@ -22,7 +22,7 @@ ipcMain.on("createNewAnalysis", (event, params) => {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 1000,
+    width: 800,
     height: 800,
     webPreferences: {
       nodeIntegration: false,

@@ -7,16 +7,16 @@ const ipcRenderer = window.ipcRenderer;
 
 var formStyles = {
   width: "50%",
-  margin: "20% 5% 20% 25%",
+  margin: "20% 5% 0% 25%",
   textAlign: "left",
-  padding: "0% 2% 50% 2%"
+  height: "60vh"
 };
 var inputStyles = {
   marginBottom: "2%"
 };
 var backButtonStyles = {
   float: "left",
-  marginRight: "5%"
+  marginLeft: "5%"
 };
 var continueButtonStyles = {
   float: "right",

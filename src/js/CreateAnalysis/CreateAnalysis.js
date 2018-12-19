@@ -4,7 +4,6 @@ import isElectron from "is-electron";
 import {Button} from "react-bootstrap";
 
 import DropComponents from "./Components/DropComponents.js";
-import SelectedFileListPanel from "./Components/SelectedFileListPanel.js";
 import SelectedFileList from "./Components/SelectedFileList";
 
 import {NavLink} from "react-router-dom";
@@ -16,18 +15,30 @@ const ipcRenderer = window.ipcRenderer;
 
 var continueButtonStyles = {
   float: "right",
-  marginRight: "5%"
+  marginRight: "5%",
+  marginTop: "8px"
+};
+var flexContainer = {
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "90vh"
 };
 
 class CreateAnalysis extends Component {
   constructor(props) {
     super(props);
+
+    this.handleClick = this.handleClick.bind(this);
     this.state = {
       ...dashboardConfig,
       proceedToMeta: false
     };
   }
-
+  handleClick(e) {
+    this.refs.fileUploader.click();
+  }
   setCanProceedToMeta = inputs => {
     //Check if min number of files reached to continue
     var canContinue = true;
@@ -119,15 +130,13 @@ class CreateAnalysis extends Component {
 
     return (
       <div>
-        <div id="drag-file" style={{display: "flex"}}>
+        <div id="drag-file" style={flexContainer}>
           <DropComponents
             input={this.state.input}
             fileList={this.state.filePaths}
             onDelete={this.onDelete}
           >
-            <SelectedFileListPanel>
-              <SelectedFileList />
-            </SelectedFileListPanel>
+            <SelectedFileList />
           </DropComponents>
         </div>
         {continueButton}

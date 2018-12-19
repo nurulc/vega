@@ -1,34 +1,32 @@
 import React from "react";
-import {Button, ButtonGroup} from "reactstrap";
+import {ButtonGroup} from "reactstrap";
 import {dashboardConfig, projectColours} from "../resources/config";
 import {NavLink} from "react-router-dom";
 import "./Home.css";
 
 const wellStyles = {
-  position: "absolute",
-  top: "40%",
-  left: "15%"
+  paddingTop: "30%",
+  left: "17%"
 };
 
 const buttonStyles = {
-  padding: "25px",
+  padding: "20px",
   marginRight: "180px",
-  backgroundColor: [projectColours.colour3],
-  borderColor: [projectColours.colour1]
+  backgroundColor: "transparent"
 };
 
 const Home = () => {
   return (
     <ButtonGroup style={wellStyles}>
       <NavLink to="/OpenAnalysis">
-        <Button color="primary" size="lg" style={buttonStyles}>
+        <button style={buttonStyles} className="homeButton">
           Open Existing Analysis{" "}
-        </Button>{" "}
+        </button>{" "}
       </NavLink>{" "}
       <NavLink to="/CreateAnalysis">
-        <Button color="primary" size="lg" style={buttonStyles}>
+        <button style={buttonStyles} className="homeButton">
           Create New Analysis{" "}
-        </Button>{" "}
+        </button>{" "}
       </NavLink>{" "}
     </ButtonGroup>
   );
