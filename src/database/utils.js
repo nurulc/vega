@@ -60,10 +60,9 @@ async function createMissingDBEntries(db, missingDbEntries) {
 
 //Returns a parsed object with all pathNames
 function getParsedFilePathObj(filePathObj) {
-  var parsedFilePathObj = [];
-  Object.keys(filePathObj).forEach(input => {
-    filePathObj[input].map(filePath => {
-      parsedFilePathObj.push({pathName: filePath});
+  const parsedFilePathObj = Object.entries(filePathObj).map(([key, value]) => {
+    filePathObj[key].map(filePath => {
+      return [...parsedFilePathObj, {pathName: filePath}];
     });
   });
   return parsedFilePathObj;
