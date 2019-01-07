@@ -20,7 +20,7 @@ export const dashboardConfig = {
   filePaths: {segment: [], tree: []},
   databasePaths: {
     files: "/src/database/db/files.db",
-    anaylsis: "/src/database/db/anaylsis.db",
+    analysis: "/src/database/db/analysis.db",
     relations: "/src/database/db/relations.db"
   }
 };
