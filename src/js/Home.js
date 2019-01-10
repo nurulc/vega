@@ -5,13 +5,13 @@ import {NavLink} from "react-router-dom";
 import "./Home.css";
 
 const wellStyles = {
-  paddingTop: "30%",
-  left: "17%"
+  paddingTop: "40%",
+  left: "10vw"
 };
 
 const buttonStyles = {
   padding: "20px",
-  marginRight: "180px",
+  marginRight: "150px",
   backgroundColor: "transparent"
 };
 

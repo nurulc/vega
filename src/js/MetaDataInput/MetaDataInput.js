@@ -39,7 +39,8 @@ class MetaDataInput extends Component {
   }
   componentDidMount() {
     ipcRenderer.on("analysisAdded", (event, args) => {
-      console.log(args);
+      //Display files that were added
+      //console.log(args);
     });
   }
   getValidationState() {
