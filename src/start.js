@@ -18,10 +18,12 @@ ipcMain.on("checkForFileErrors", (event, params) => {
 
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
-  var finalAnalysis = await createAnalysis(collections, params, event);
+  var finalAnalysis = await createAnalysis(collections, params);
 
+  event.sender.send("analysisAdded", finalAnalysis);
   //Uncomment to see files made
-  /*finalAnalysis.fileIDList.map(id => {
+  /*
+  finalAnalysis.fileIDList.map(id => {
     var obj = {$loki: id};
     var file = collections.files.find(obj);
     event.sender.send("analysisAdded", file);
@@ -48,7 +50,7 @@ function createWindow() {
   );
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
     mainWindow = null;

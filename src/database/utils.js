@@ -60,8 +60,8 @@ const getMissingFileIds = (fileEntries, database) => {
       return await parseFileContents(filePathObj.pathName, saveFile);
     })
   ).then(newJsonPathList => {
-    //Return a list of old and new file IDs
-    return getNewFileIDList(database, newJsonPathList);
+    //Return a list of new file IDs
+    return createFileDBEntry(database, newJsonPathList);
   });
 };
 
@@ -112,14 +112,6 @@ function sortFileEntries(db, filePathObject) {
   return allEntries;
 }
 
-//For every unexisting file in DB create an entry
-function getNewFileIDList(db, missingDbEntries) {
-  return missingDbEntries.reduce((finalIDList, curr) => {
-    var newId = createFileDBEntry(db, curr.pathName, curr.jsonPath);
-    return [...finalIDList, newId];
-  }, []);
-}
-
 //Returns a parsed object with all pathNames
 function getParsedFilePathObj(filePathObj) {
   var parsedFilePathObjList = [];
@@ -134,17 +126,17 @@ function getParsedFilePathObj(filePathObj) {
 //Create a relation between a file and an analysis
 function createDbRelations(db, results) {
   //For each file, relate it back to 1 analysisID
-  results["fileIDList"].map(fileID => {
+  var allRelations = results["fileIDList"].reduce((finalList, currFileID) => {
     var today = Date.now();
 
     var relationObj = {
       analysisID: results["analysisID"],
-      fileID: fileID,
+      fileID: currFileID,
       date: today
     };
-
-    db.relations.insert(relationObj);
-  });
+    return [...finalList, relationObj];
+  }, []);
+  db.relations.insert(allRelations);
 }
 
 //Create a new database analysis entry
@@ -160,12 +152,20 @@ async function getAnalysisID(db, name, description) {
 }
 
 //Create a new database file entry
-function createFileDBEntry(db, filePath, jsonPath) {
-  var fileObj = {
-    pathName: filePath,
-    jsonPath: jsonPath
-  };
+function createFileDBEntry(db, newEntries) {
+  var formattedFileEntries = newEntries.reduce((finalIDList, curr) => {
+    var currObj = {
+      pathName: curr.pathName,
+      jsonPath: curr.jsonPath
+    };
+    return [...finalIDList, currObj];
+  }, []);
 
-  var newFile = db.files.insert(fileObj);
-  return newFile.$loki;
+  var newDbEntries = db.files.insert(formattedFileEntries);
+
+  var newIdList = newDbEntries.hasOwnProperty("$loki")
+    ? [newDbEntries.$loki]
+    : newDbEntries.map(entry => entry.$loki);
+
+  return newIdList;
 }
