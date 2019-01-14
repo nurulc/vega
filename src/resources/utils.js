@@ -6,7 +6,6 @@ import {inputConfig} from "./config";
 const csv = require("fast-csv");
 const getLine = require("get-line");
 const es = require("event-stream");
-//const csvJson = require("csvtojson");
 
 export const checkForFileErrors = params => {
   var args = params.args;

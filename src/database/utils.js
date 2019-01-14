@@ -1,6 +1,7 @@
 import {parseFileContents} from "../resources/utils.js";
 const fs = require("fs");
 const appRoot = require("app-root-path");
+const rootPath = appRoot + "/src/database/temp/";
 
 //Returns [analysisID,[fileIDs]] of a created analysis
 export const createAnalysis = async (database, params) => {
@@ -73,7 +74,7 @@ const saveFile = async (results, param) => {
       .toString(36)
       .substr(2, 5) + ".json";
 
-  var filePath = appRoot + "/src/database/temp/" + fileName;
+  var filePath = rootPath + fileName;
 
   return new Promise((resolve, reject) => {
     fs.writeFile(filePath, json, function(err) {
@@ -122,20 +123,26 @@ function getParsedFilePathObj(filePathObj) {
   });
   return parsedFilePathObjList;
 }
-
+//Create a new database analysis entry
+export async function getAllAnalysis(event) {
+  return new Promise(resolve => {
+    var getAllAnalysis = db.analysis.find({});
+    resolve(analysisId.$loki);
+  });
+}
 //Create a relation between a file and an analysis
 function createDbRelations(db, results) {
   //For each file, relate it back to 1 analysisID
-  var allRelations = results["fileIDList"].reduce((finalList, currFileID) => {
+  var allRelations = results["fileIDList"].map((finalList, currFileID) => {
     var today = Date.now();
 
-    var relationObj = {
+    return {
       analysisID: results["analysisID"],
       fileID: currFileID,
       date: today
     };
-    return [...finalList, relationObj];
-  }, []);
+  });
+
   db.relations.insert(allRelations);
 }
 
