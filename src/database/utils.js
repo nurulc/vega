@@ -160,13 +160,12 @@ async function getAnalysisID(db, name, description) {
 
 //Create a new database file entry
 function createFileDBEntry(db, newEntries) {
-  var formattedFileEntries = newEntries.reduce((finalIDList, curr) => {
-    var currObj = {
+  var formattedFileEntries = newEntries.map((finalIDList, curr) => {
+    return {
       pathName: curr.pathName,
       jsonPath: curr.jsonPath
     };
-    return [...finalIDList, currObj];
-  }, []);
+  });
 
   var newDbEntries = db.files.insert(formattedFileEntries);
 
