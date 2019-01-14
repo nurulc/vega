@@ -70,7 +70,14 @@ class MetaDataInput extends Component {
   render() {
     const backButton = (
       <Button style={backButtonStyles}>
-        <NavLink to="/CreateAnalysis">Back</NavLink>
+        <NavLink
+          to={{
+            pathname: "/CreateAnalysis",
+            state: {filePaths: {...this.state.filePaths}}
+          }}
+        >
+          Back
+        </NavLink>
       </Button>
     );
 
