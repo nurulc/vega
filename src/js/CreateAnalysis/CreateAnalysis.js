@@ -94,21 +94,22 @@ class CreateAnalysis extends Component {
 
       dragFilesHolder.forEach(holder => {
         holder.ondragover = e => {
+          d3.select(holder).classed("onDragOver", true);
           e.preventDefault();
         };
         holder.ondragenter = e => {
           e.preventDefault();
-          d3.select(e.target).classed("onDragOver", true);
+          d3.select(holder).classed("onDragOver", true);
           return false;
         };
 
         holder.ondragleave = e => {
           e.preventDefault();
-          d3.select(e.target).classed("onDragOver", false);
+          d3.select(holder).classed("onDragOver", false);
         };
 
         holder.ondrop = e => {
-          d3.select(e.target).classed("onDragOver", false);
+          d3.select(holder).classed("onDragOver", false);
           var args = getFileArgs(e);
           var currState = {...this.state, args};
           ipcRenderer.send("checkForFileErrors", currState);
