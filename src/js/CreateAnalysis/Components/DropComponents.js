@@ -12,8 +12,7 @@ var wellStyles = {
   boxShadow: "inset 0 1px 1px rgba(0,0,0,.05)"
 };
 
-const DropComponents = props => {
-  const {input, fileList, fileSelectionButton} = props;
+const DropComponents = ({input, fileList, fileSelectionButton}) => {
   //Create a boxed component for the user to drop and delete files
   const dropComponents = input.map(inputObj => {
     const filePaths = fileList[inputObj.type];
