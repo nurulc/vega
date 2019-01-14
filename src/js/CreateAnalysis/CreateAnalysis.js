@@ -29,30 +29,32 @@ var flexContainer = {
 class CreateAnalysis extends Component {
   constructor(props) {
     super(props);
+    var setCanProceedToMeta = false;
+    if (
+      this.props.location.state !== undefined &&
+      this.props.location.state.hasOwnProperty("filePaths")
+    ) {
+      dashboardConfig["filePaths"] = this.props.location.state.filePaths;
+      setCanProceedToMeta = true;
+    }
 
-    this.handleClick = this.handleClick.bind(this);
     this.state = {
       ...dashboardConfig,
-      proceedToMeta: false
+      proceedToMeta: setCanProceedToMeta
     };
   }
-  handleClick(e) {
-    this.refs.fileUploader.click();
-  }
-  setCanProceedToMeta = inputs => {
+
+  canProceedToMeta = newPathList => {
     //Check if min number of files reached to continue
-    var canContinue = true;
-    inputs.map(inputObj => {
-      const filePaths = this.state.filePaths[inputObj.type];
+    var canContinueList = this.state.input.map(inputObj => {
+      const filePaths = newPathList[inputObj.type];
       const minFileCount = inputConfig[inputObj.type].minFiles;
-      if (filePaths.length < minFileCount) {
-        canContinue = false;
-      }
+      return filePaths.length >= minFileCount;
     });
-    if (canContinue) {
-      this.setState({proceedToMeta: canContinue});
-    }
+    var canContinue = canContinueList.indexOf(false) > -1;
+    return !canContinue;
   };
+
   onDelete = (fileName, type) => {
     this.setFileList(fileName, type, true);
   };
@@ -71,8 +73,13 @@ class CreateAnalysis extends Component {
           : [...currStatePaths[type], file];
     }
     //Set the new state
-    this.setState({filePaths: currStatePaths});
-    this.setCanProceedToMeta(this.state.input);
+    this.setState({
+      filePaths: currStatePaths
+    });
+
+    this.setState({
+      proceedToMeta: this.canProceedToMeta(currStatePaths)
+    });
   };
 
   componentDidMount() {
@@ -80,7 +87,6 @@ class CreateAnalysis extends Component {
       //Handle correct file path
       ipcRenderer.on("confirmed-correctFilePath", (event, args) => {
         this.setFileList(args.path, args.target);
-        this.setCanProceedToMeta(this.state.input);
       });
 
       //Handle drag and drop on containers
