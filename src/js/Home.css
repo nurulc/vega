@@ -56,3 +56,6 @@
 	-webkit-transition-delay: 0.175s;
 	transition-delay: 0.175s;
 }
+body a:hover {
+  text-decoration: none;
+}
