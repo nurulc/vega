@@ -1,113 +1,177 @@
-import database from "./datastores.js";
+import {parseFileContents} from "../resources/utils.js";
+const fs = require("fs");
+const appRoot = require("app-root-path");
+const rootPath = appRoot + "/src/database/temp/";
 
 //Returns [analysisID,[fileIDs]] of a created analysis
-export const createAnalysis = params => {
-  var fileIDList = getFilePathIds(database, params.filePaths);
-  var analysisID = createDbAnalysis(database, params.name, params.description);
+export const createAnalysis = async (database, params) => {
+  //Query the database for missing parsed files
+  var allFileIDs = await getAllFileIds(database, params);
 
-  return Promise.all([analysisID, fileIDList]).then(function(value) {
-    var analysisID = value[0];
-    var fileIDList = value[1];
-    createDbRelations(database, analysisID, fileIDList);
-    return value;
+  var analysisID = await getAnalysisID(
+    database,
+    params.name,
+    params.description
+  );
+
+  var finalAnalysis = await createAnalysisFileRelations(
+    analysisID,
+    allFileIDs,
+    database
+  );
+
+  return finalAnalysis;
+};
+async function createAnalysisFileRelations(analysisID, allFileIDs, database) {
+  //Once all files and analysis entries are created, make the relation entries
+  return Promise.all([analysisID, allFileIDs]).then(function(databaseResults) {
+    var results = {};
+
+    results.analysisID = databaseResults[0];
+    results.fileIDList = databaseResults[1];
+
+    createDbRelations(database, results);
+    return results;
+  });
+}
+async function getAllFileIds(database, params) {
+  var sortedFileIDList = sortFileEntries(database, params.filePaths);
+
+  //Return the id's from the files table for each file
+  return new Promise(async (resolve, reject) => {
+    if (sortedFileIDList.missingDbEntries.length !== 0) {
+      await getMissingFileIds(sortedFileIDList, database).then(
+        missingFileIds => {
+          var allFileIds = missingFileIds.concat(
+            sortedFileIDList.existingDbEntries
+          );
+          resolve(allFileIds);
+        }
+      );
+    } else {
+      //If there are no new files that need to be parsed, return existing ids
+      resolve(sortedFileIDList.existingDbEntries);
+    }
+  });
+}
+const getMissingFileIds = (fileEntries, database) => {
+  return Promise.all(
+    //For every missing json file, parse and save
+    fileEntries["missingDbEntries"].map(async filePathObj => {
+      return await parseFileContents(filePathObj.pathName, saveFile);
+    })
+  ).then(newJsonPathList => {
+    //Return a list of new file IDs
+    return createFileDBEntry(database, newJsonPathList);
   });
 };
 
-//Retrieve IDs for filePaths in DB, create if does not exist
-const getFilePathIds = (db, filePathObject) => {
-  //Check to see if filepaths already exists
-  return new Promise(function(resolve, reject) {
-    var fileIDList = [];
-    var allUserChoosenPaths = getParsedFilePathObj(filePathObject);
+//Save the parsed input file as a json
+const saveFile = async (results, param) => {
+  var json = JSON.stringify(results);
+  var fileName =
+    Math.random()
+      .toString(36)
+      .substr(2, 5) + ".json";
 
-    //Create a list of missing entries
-    var missingDbEntries;
-    var existingDbEntries;
+  var filePath = rootPath + fileName;
 
-    db.files.find({$or: allUserChoosenPaths}, async function(err, hit) {
-      //If atleast 1 path already exists
-      if (hit) {
-        //Parse out id's from existing db entries
-        existingDbEntries = hit.map(existingEntry => {
-          return existingEntry._id;
-        });
-        //get list of paths that don't exist in the db
-        missingDbEntries = allUserChoosenPaths.filter(
-          n => !hit.some(n2 => n.pathName == n2.pathName)
-        );
+  return new Promise((resolve, reject) => {
+    fs.writeFile(filePath, json, function(err) {
+      if (err) {
+        reject(err);
       } else {
-        //No paths are present in db
-        existingDbEntries = [];
-        missingDbEntries = allUserChoosenPaths;
+        var newFileObj = {
+          jsonPath: fileName,
+          pathName: param
+        };
+
+        resolve(newFileObj);
       }
-      //Create file entry in db if it's missing
-      if (missingDbEntries.length > 0) {
-        fileIDList = await createMissingDBEntries(db, missingDbEntries);
-      }
-      //Return a list of all the file IDs
-      resolve(fileIDList.concat(existingDbEntries));
     });
   });
 };
 
-//For every unexisting file in DB create an entry
-async function createMissingDBEntries(db, missingDbEntries) {
-  return await missingDbEntries.reduce(async (finalList, curr) => {
-    var newId = await createFileDBEntry(db, curr.pathName);
-    return [...finalList, newId];
-  }, []);
+function sortFileEntries(db, filePathObject) {
+  var fileIDList = [];
+  var allUserChoosenPaths = getParsedFilePathObj(filePathObject);
+  var allEntries = {};
+  //Create a list of missing and existing file entries
+  var hit = db.files.find({$or: allUserChoosenPaths});
+
+  allEntries.missingDbEntries = hit
+    ? allUserChoosenPaths.filter(
+        l1 => !hit.some(l2 => l1.pathName == l2.pathName)
+      )
+    : allUserChoosenPaths;
+
+  allEntries.existingDbEntries = hit.map(existingEntry => {
+    return existingEntry.$loki;
+  });
+
+  //return all cases
+  return allEntries;
 }
 
 //Returns a parsed object with all pathNames
 function getParsedFilePathObj(filePathObj) {
-  const parsedFilePathObj = Object.entries(filePathObj).map(([key, value]) => {
-    filePathObj[key].map(filePath => {
-      return [...parsedFilePathObj, {pathName: filePath}];
+  var parsedFilePathObjList = [];
+  Object.keys(filePathObj).map(input => {
+    filePathObj[input].map(filePath => {
+      parsedFilePathObjList = [...parsedFilePathObjList, {pathName: filePath}];
     });
   });
-  return parsedFilePathObj;
+  return parsedFilePathObjList;
 }
-
+//Create a new database analysis entry
+export async function getAllAnalysis(event) {
+  return new Promise(resolve => {
+    var getAllAnalysis = db.analysis.find({});
+    resolve(analysisId.$loki);
+  });
+}
 //Create a relation between a file and an analysis
-function createDbRelations(db, analysisID, fileIDList) {
+function createDbRelations(db, results) {
   //For each file, relate it back to 1 analysisID
-  fileIDList.map(fileID => {
+  var allRelations = results["fileIDList"].map((finalList, currFileID) => {
     var today = Date.now();
 
-    var relationObj = {
-      analysisID: analysisID,
-      fileID: fileID,
+    return {
+      analysisID: results["analysisID"],
+      fileID: currFileID,
       date: today
     };
-
-    db.relations.insert(relationObj);
   });
+
+  db.relations.insert(allRelations);
 }
 
 //Create a new database analysis entry
-async function createDbAnalysis(db, name, description) {
-  var newAnalysisInstance = new Promise(resolve => {
+async function getAnalysisID(db, name, description) {
+  return new Promise(resolve => {
     var analysisObj = {
       name: name,
       description: description
     };
-
-    db.analysis.insert(analysisObj, function(err, dbEntry) {
-      resolve(dbEntry._id);
-    });
+    var analysisId = db.analysis.insert(analysisObj);
+    resolve(analysisId.$loki);
   });
-  return newAnalysisInstance;
 }
 
 //Create a new database file entry
-async function createFileDBEntry(db, filePath) {
-  var newFileInstance = new Promise(resolve => {
-    var fileObj = {
-      pathName: filePath
+function createFileDBEntry(db, newEntries) {
+  var formattedFileEntries = newEntries.map((finalIDList, curr) => {
+    return {
+      pathName: curr.pathName,
+      jsonPath: curr.jsonPath
     };
-    db.files.insert(fileObj, function(err, dbEntry) {
-      resolve(dbEntry._id);
-    });
   });
-  return newFileInstance;
+
+  var newDbEntries = db.files.insert(formattedFileEntries);
+
+  var newIdList = newDbEntries.hasOwnProperty("$loki")
+    ? [newDbEntries.$loki]
+    : newDbEntries.map(entry => entry.$loki);
+
+  return newIdList;
 }

@@ -3,6 +3,7 @@ const path = require("path");
 const url = require("url");
 import {checkForFileErrors, fileParsing} from "./resources/utils.js";
 import {createAnalysis} from "./database/utils.js";
+import collections from "./database/datastores.js";
 let mainWindow;
 
 //Send out an error alert
@@ -16,11 +17,17 @@ ipcMain.on("checkForFileErrors", (event, params) => {
 });
 
 //Create a new instance in the DB
-ipcMain.on("createNewAnalysis", (event, params) => {
-  var analysis = createAnalysis(params, event);
-  analysis.then(function(value) {
-    event.sender.send("analysisAdded", value);
-  });
+ipcMain.on("createNewAnalysis", async (event, params) => {
+  var finalAnalysis = await createAnalysis(collections, params);
+
+  event.sender.send("analysisAdded", finalAnalysis);
+  //Uncomment to see files made
+  /*
+  finalAnalysis.fileIDList.map(id => {
+    var obj = {$loki: id};
+    var file = collections.files.find(obj);
+    event.sender.send("analysisAdded", file);
+  });*/
 });
 
 function createWindow() {

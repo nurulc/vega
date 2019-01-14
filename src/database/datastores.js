@@ -1,22 +1,24 @@
-var Datastore = require("nedb");
 import {dashboardConfig} from "../resources/config.js";
+const loki = require("lokijs");
 var appRoot = require("app-root-path");
 
-var database = {};
-
-database.files = new Datastore({
-  filename: appRoot + dashboardConfig.databasePaths.files,
-  autoload: true
+var databasePath = appRoot + dashboardConfig.databasePath;
+var database = new loki(databasePath, {
+  autoload: true,
+  autoloadCallback: loadHandler,
+  autosave: true,
+  autosaveInterval: 10000
 });
 
-database.analysis = new Datastore({
-  filename: appRoot + dashboardConfig.databasePaths.analysis,
-  autoload: true
-});
+var collections = {};
 
-database.relations = new Datastore({
-  filename: appRoot + dashboardConfig.databasePaths.relations,
-  autoload: true
-});
+function loadHandler() {
+  dashboardConfig.collectionsList.map(collection => {
+    collections[collection] = database.getCollection(collection);
+    if (!collections[collection]) {
+      collections[collection] = database.addCollection(collection);
+    }
+  });
+}
 
-export default database;
+export default collections;

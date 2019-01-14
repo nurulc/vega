@@ -3,7 +3,9 @@ const path = require("path");
 const url = require("url");
 import {Messages} from "../js/Alerts/ErrorConsts";
 import {inputConfig} from "./config";
-var Papa = require("papaparse");
+const csv = require("fast-csv");
+const getLine = require("get-line");
+const es = require("event-stream");
 
 export const checkForFileErrors = params => {
   var args = params.args;
@@ -25,47 +27,72 @@ export const checkForFileErrors = params => {
   }
   return errorMsg;
 };
-function verifyFileHeaders(results, event, param) {
-  var headerList = results.meta.fields;
+
+//Returns a list of missing csv headers
+function getMissingFileHeaders(headerList, param) {
   var requiredHeaders = inputConfig[param.args.target].requiredFields;
-  var missingRequiredHeaders = [];
-
-  requiredHeaders.map(requiredHeader => {
-    if (headerList.indexOf(requiredHeader) < 0) {
-      missingRequiredHeaders.push(requiredHeader);
-    }
-  });
-
-  if (missingRequiredHeaders.length !== 0) {
-    var errorMsg =
-      Messages.errorMissingRequiredHeader + missingRequiredHeaders.join(", ");
-    event.sender.send("error-WithMsg", errorMsg);
-  } else {
-    event.sender.send("confirmed-correctFilePath", param.args);
-  }
+  return requiredHeaders.filter(x => !headerList.includes(x));
 }
 
 export const fileParsing = (event, param) => {
   var input = param.args.target;
   if (inputConfig[input].hasOwnProperty("requiredFields")) {
-    parseFileContents(event, param, verifyFileHeaders);
+    parseFileHeaderContents(event, param, getMissingFileHeaders).then(
+      missingFileHeaders => {
+        if (missingFileHeaders.length !== 0) {
+          var errorMsg =
+            Messages.errorMissingRequiredHeader +
+            missingRequiredHeaders.join(", ");
+          event.sender.send("error-WithMsg", errorMsg);
+        } else {
+          event.sender.send("confirmed-correctFilePath", param.args);
+        }
+      }
+    );
   } else {
     event.sender.send("confirmed-correctFilePath", param.args);
   }
 };
 
-const parseFileContents = (event, param, callback) => {
-  const content = fs.createReadStream(param.args.path);
-  Papa.parse(content, {
-    worker: true,
-    download: true,
-    header: true,
-    fastMode: true,
-    complete: function(results) {
-      callback(results, event, param);
-    }
+export const parseFileHeaderContents = async (event, param, callback) => {
+  const path = param.hasOwnProperty("args") ? param.args.path : param;
+  var getLines = getLine({
+    lines: [1],
+    encoding: "utf8"
+  });
+
+  return new Promise(async function(resolve, reject) {
+    await fs
+      .createReadStream(path)
+      .pipe(getLines)
+      .pipe(
+        es.map(function(line, next) {
+          var data = line.split(",").map(function(c) {
+            return c.trim();
+          });
+          resolve(callback(data, param));
+          return next(null, line);
+        })
+      );
   });
 };
+
+export const parseFileContents = async (param, callback) => {
+  const path = param.hasOwnProperty("args") ? param.args.path : param;
+
+  var finalJson = [];
+  return new Promise(async function(resolve, reject) {
+    csv
+      .fromPath(path, {headers: true})
+      .on("data", function(data) {
+        finalJson = [...finalJson, data];
+      })
+      .on("end", async function() {
+        resolve(callback(finalJson, param));
+      });
+  });
+};
+
 const isDuplicate = param => {
   return param.filePaths[param.args.target].indexOf(param.args.path) > -1;
 };
@@ -76,6 +103,7 @@ const lessThanMaxNumFile = param => {
     : inputConfig[param.args.target].maxFiles >=
         param.filePaths[param.args.target].length + 1;
 };
+
 const isCorrectExt = args => {
   //Does the extension match the location it was dropped
   //Does the extension match the allowed ext

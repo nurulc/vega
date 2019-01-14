@@ -18,11 +18,8 @@ export const dashboardConfig = {
   name: "Lyra Dashboard",
   input: [inputConfig.segment, inputConfig.tree],
   filePaths: {segment: [], tree: []},
-  databasePaths: {
-    files: "/src/database/db/files.db",
-    analysis: "/src/database/db/analysis.db",
-    relations: "/src/database/db/relations.db"
-  }
+  databasePath: "/src/database/db/database.db",
+  collectionsList: ["files", "analysis", "relations"]
 };
 
 export const projectColours = {
