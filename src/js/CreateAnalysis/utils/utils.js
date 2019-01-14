@@ -8,10 +8,7 @@ export const getFileType = file => {
 //Retreive the appropriate arguments for the file being opened
 export const getFileArgs = e => {
   e.preventDefault();
-  var dropTargetType =
-    e.target.attributes.getNamedItem("dragtype") === null
-      ? e.target.parentElement.attributes.dragtype.nodeValue
-      : e.target.attributes.dragtype.nodeValue;
+  var dropTargetType = e.currentTarget.attributes.dragtype.nodeValue;
 
   var fileType = getFileType(e.dataTransfer.files[0]);
   var filePath = e.dataTransfer.files[0].path;
