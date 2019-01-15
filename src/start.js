@@ -2,7 +2,7 @@ const {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
 import {checkForFileErrors, fileParsing} from "./resources/utils.js";
-import {createAnalysis} from "./database/utils.js";
+import {createAnalysis, getAllAnalysis} from "./database/utils.js";
 import collections from "./database/datastores.js";
 let mainWindow;
 
@@ -16,18 +16,21 @@ ipcMain.on("checkForFileErrors", (event, params) => {
   }
 });
 
+ipcMain.on("getAllAnalysis", event => {
+  var databaseResults = getAllAnalysis(event, collections);
+  event.sender.send("allAnalysis", databaseResults);
+});
+
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
-  var finalAnalysis = await createAnalysis(collections, params);
-
-  event.sender.send("analysisAdded", finalAnalysis);
+  var finalAnalysis = await createAnalysis(collections, params, event);
   //Uncomment to see files made
-  /*
-  finalAnalysis.fileIDList.map(id => {
+
+  /*inalAnalysis.fileIDList.map(id => {
     var obj = {$loki: id};
     var file = collections.files.find(obj);
     event.sender.send("analysisAdded", file);
-  });*/
+});*/
 });
 
 function createWindow() {

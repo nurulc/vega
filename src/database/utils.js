@@ -124,16 +124,36 @@ function getParsedFilePathObj(filePathObj) {
   return parsedFilePathObjList;
 }
 //Create a new database analysis entry
-export async function getAllAnalysis(event) {
-  return new Promise(resolve => {
-    var getAllAnalysis = db.analysis.find({});
-    resolve(analysisId.$loki);
+export function getAllAnalysis(event, db) {
+  var allAnalysis = db.analysis.find({$loki: {$ne: null}});
+  var allAnalysisIDs = allAnalysis.map(analysis => {
+    return {analysisID: analysis.$loki};
   });
+
+  var allRelations = db.relations.find({$or: allAnalysisIDs});
+  var allFileIDs = allRelations
+    .map(relation => {
+      return {$loki: relation.fileID};
+    })
+    .reduce((finalList, curr) => {
+      finalList =
+        finalList.findIndex(inList => inList.$loki === curr.$loki) >= 0
+          ? finalList
+          : [...finalList, curr];
+      return finalList;
+    }, []);
+
+  var allFiles = db.files.find({$or: allFileIDs});
+  return {
+    allAnalysis: allAnalysis,
+    allRelations: allRelations,
+    allFiles: allFiles
+  };
 }
 //Create a relation between a file and an analysis
 function createDbRelations(db, results) {
   //For each file, relate it back to 1 analysisID
-  var allRelations = results["fileIDList"].map((finalList, currFileID) => {
+  var allRelations = results["fileIDList"].map(currFileID => {
     var today = Date.now();
 
     return {
@@ -160,10 +180,10 @@ async function getAnalysisID(db, name, description) {
 
 //Create a new database file entry
 function createFileDBEntry(db, newEntries) {
-  var formattedFileEntries = newEntries.map((finalIDList, curr) => {
+  var formattedFileEntries = newEntries.map(entry => {
     return {
-      pathName: curr.pathName,
-      jsonPath: curr.jsonPath
+      pathName: entry.pathName,
+      jsonPath: entry.jsonPath
     };
   });
 
