@@ -132,15 +132,11 @@ export function getAllAnalysis(event, db) {
 
   var allRelations = db.relations.find({$or: allAnalysisIDs});
   var allFileIDs = allRelations
-    .map(relation => {
-      return {$loki: relation.fileID};
-    })
+    .map(relation => ({$loki: relation.fileID}))
     .reduce((finalList, curr) => {
-      finalList =
-        finalList.findIndex(inList => inList.$loki === curr.$loki) >= 0
-          ? finalList
-          : [...finalList, curr];
-      return finalList;
+      return finalList.findIndex(inList => inList.$loki === curr.$loki) >= 0
+        ? finalList
+        : [...finalList, curr];
     }, []);
 
   var allFiles = db.files.find({$or: allFileIDs});
