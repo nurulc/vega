@@ -1,6 +1,5 @@
 import React from "react";
 import {ButtonGroup} from "reactstrap";
-import {dashboardConfig, projectColours} from "../resources/config";
 import {NavLink} from "react-router-dom";
 import "./Home.css";
 
