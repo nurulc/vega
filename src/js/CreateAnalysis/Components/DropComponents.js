@@ -1,23 +1,28 @@
 import React from "react";
 import SelectedFileList from "./SelectedFileList";
 import {PageHeader} from "react-bootstrap";
+import {withStyles} from "@material-ui/core/styles";
+import Paper from "@material-ui/core/Paper";
 
-var wellStyles = {
-  width: "90vw",
-  margin: "2.5% 5% 0% 5%",
-  textAlign: "center",
-  backgroundColor: "white",
-  border: "1px dashed #e3e3e3",
-  borderRadius: "4px",
-  boxShadow: "inset 0 1px 1px rgba(0,0,0,.05)"
-};
-
+const classes = theme => ({
+  root: {
+    padding: "7px",
+    width: "90vw",
+    margin: "2.5% 5% 0% 5%",
+    textAlign: "center",
+    backgroundColor: "white",
+    border: "1px dashed #e3e3e3",
+    borderRadius: "4px",
+    boxShadow: "inset 0 1px 1px rgba(0,0,0,.05)"
+  }
+});
 const DropComponents = ({
   input,
   fileList,
   fileSelectionButton,
   children,
-  onDelete
+  onDelete,
+  classes
 }) => {
   //Create a boxed component for the user to drop and delete files
   const dropComponents = input.map(inputObj => {
@@ -47,17 +52,17 @@ const DropComponents = ({
     );
     //Entire drop component with box outline
     return (
-      <div
-        className="well dragWells"
+      <Paper
+        className={[classes.root, "dragWells", "wells"]}
+        elevation="1"
         dragType={inputObj.type}
-        style={wellStyles}
       >
         {" "}
         {header} {childrenWithMoreProps}
-      </div>
+      </Paper>
     );
   });
   return dropComponents;
 };
 
-export default DropComponents;
+export default withStyles(classes)(DropComponents);

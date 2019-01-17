@@ -1,17 +1,24 @@
 import React from "react";
-import {Panel, ListGroup} from "react-bootstrap";
-import {ListGroupItem} from "react-bootstrap";
+import Paper from "@material-ui/core/Paper";
+import {withStyles} from "@material-ui/core/styles";
 
 var closeButtonStyle = {
   float: "right",
   cursor: "pointer"
 };
+const classes = theme => ({
+  root: {
+    padding: "7px",
+    margin: "5px"
+  }
+});
 
 const SelectedFileList = props => {
+  const {classes} = props;
   const {dragType, choosenFiles} = {...props};
   const selectedPanel = choosenFiles.map(fileName => {
     return (
-      <ListGroupItem>
+      <Paper className={classes.root} elevation="1">
         {fileName}
         <span
           aria-hidden="true"
@@ -20,14 +27,9 @@ const SelectedFileList = props => {
         >
           &times;
         </span>
-      </ListGroupItem>
+      </Paper>
     );
   });
-
-  return (
-    <Panel dragtype={dragType}>
-      <ListGroup dragtype={dragType}>{selectedPanel}</ListGroup>
-    </Panel>
-  );
+  return <div>{selectedPanel}</div>;
 };
-export default SelectedFileList;
+export default withStyles(classes)(SelectedFileList);

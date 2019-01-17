@@ -17,6 +17,19 @@ export const theme = createMuiTheme({
       main: "#006060",
       dark: "#003536",
       contrastText: "#fff"
+    },
+    error: {
+      light: "#ffdbdd",
+      main: "#ffafb5",
+      dark: "#ba646a",
+      contrastText: "#383838"
+    }
+  },
+  overrides: {
+    Paper: {
+      root: {
+        padding: "15px"
+      }
     }
   }
 });
@@ -70,11 +83,3 @@ export const allAnalysisTableHeaders = [
     disablePadding: false
   }
 ];
-
-export const projectColours = {
-  colour1: "#001011",
-  colour2: "#003333",
-  colour3: "#3399cc",
-  colour4: "#b6ebed",
-  colour5: "#9fcbea"
-};

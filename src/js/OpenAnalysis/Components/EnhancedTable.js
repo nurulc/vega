@@ -6,6 +6,18 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import EnhancedTableHead from "./EnhancedTableHeader";
+import {withStyles} from "@material-ui/core/styles";
+
+const styles = theme => ({
+  root: {
+    width: "100%",
+    marginTop: 15
+  },
+  tableWrapper: {
+    overflowX: "auto"
+  },
+  cellPadding: 5
+});
 
 class EnhancedTable extends React.Component {
   constructor(props) {
@@ -18,16 +30,6 @@ class EnhancedTable extends React.Component {
       orderBy: "name"
     };
   }
-  handleRequestSort = (event, property) => {
-    const orderBy = property;
-    let order = "desc";
-
-    if (this.state.orderBy === property && this.state.order === "desc") {
-      order = "asc";
-    }
-
-    this.setState({order, orderBy});
-  };
   handleClick = (event, id) => {
     var newSelected;
     if (
@@ -119,4 +121,4 @@ class EnhancedTable extends React.Component {
     );
   }
 }
-export default EnhancedTable;
+export default withStyles(styles)(EnhancedTable);

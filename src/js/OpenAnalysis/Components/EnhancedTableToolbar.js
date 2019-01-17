@@ -5,8 +5,8 @@ import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
 import Tooltip from "@material-ui/core/Tooltip";
 import NextIcon from "@material-ui/icons/NavigateNext";
-import FilterListIcon from "@material-ui/icons/FilterList";
-
+import AddIcon from "@material-ui/icons/Add";
+import {NavLink} from "react-router-dom";
 import {withStyles} from "@material-ui/core/styles";
 import {lighten} from "@material-ui/core/styles/colorManipulator";
 
@@ -63,11 +63,11 @@ const EnhancedTableToolbar = ({selectedAnalysis, classes}) => {
             </IconButton>
           </Tooltip>
         ) : (
-          <Tooltip title="Filter list">
-            <IconButton aria-label="Filter list">
-              <FilterListIcon />
-            </IconButton>
-          </Tooltip>
+          <IconButton aria-label="Add">
+            <NavLink to="/CreateAnalysis">
+              <AddIcon />
+            </NavLink>
+          </IconButton>
         )}
       </div>
     </Toolbar>
