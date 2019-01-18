@@ -1,23 +1,14 @@
 import React, {Component} from "react";
 import {inputConfig, dashboardConfig} from "../../resources/config.js";
 import isElectron from "is-electron";
-import {Button} from "react-bootstrap";
-
 import DropComponents from "./Components/DropComponents.js";
 import SelectedFileList from "./Components/SelectedFileList";
-
-import {NavLink} from "react-router-dom";
+import EnhancedButton from "./Components/EnhancedButton.js";
 import {getFileArgs} from "./utils/utils.js";
-
 import * as d3 from "d3";
 import "./style.css";
 const ipcRenderer = window.ipcRenderer;
 
-var continueButtonStyles = {
-  float: "right",
-  marginRight: "5%",
-  marginTop: "8px"
-};
 var flexContainer = {
   display: "flex",
   flexDirection: "column",
@@ -121,18 +112,7 @@ class CreateAnalysis extends Component {
     //If min # of files reached add the next button
     var continueButton = "";
     if (this.state.proceedToMeta) {
-      continueButton = (
-        <Button style={continueButtonStyles}>
-          <NavLink
-            to={{
-              pathname: "/MetaDataInput",
-              state: {filePaths: {...this.state.filePaths}}
-            }}
-          >
-            Continue
-          </NavLink>
-        </Button>
-      );
+      continueButton = <EnhancedButton filePaths={this.state.filePaths} />;
     }
 
     return (

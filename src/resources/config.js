@@ -30,6 +30,12 @@ export const theme = createMuiTheme({
       root: {
         padding: "15px"
       }
+    },
+    MuiButton: {
+      root: {
+        fontColor: "#60606f",
+        fontWeight: "bold"
+      }
     }
   }
 });

@@ -14,6 +14,9 @@ const classes = theme => ({
     border: "1px dashed #e3e3e3",
     borderRadius: "4px",
     boxShadow: "inset 0 1px 1px rgba(0,0,0,.05)"
+  },
+  buttonText: {
+    fontWeight: "bold"
   }
 });
 const DropComponents = ({
