@@ -12,12 +12,12 @@ class OpenAnalysis extends Component {
   }
 
   parseOutFileName(pathName) {
-    var index = pathName.lastIndexOf("/");
+    const index = pathName.lastIndexOf("/");
     return pathName.substring(index + 1);
   }
 
   formatDatabaseResults(databaseResults) {
-    var formattedFiles = databaseResults["allFiles"].reduce(
+    const formattedFiles = databaseResults["allFiles"].reduce(
       (finalObj, file) => {
         finalObj[file.$loki] = {
           pathName: file.pathName,
@@ -45,7 +45,7 @@ class OpenAnalysis extends Component {
     if (isElectron()) {
       //Handle correct file path
       ipcRenderer.on("allAnalysis", (event, databaseResults) => {
-        var allData = this.formatDatabaseResults(databaseResults);
+        const allData = this.formatDatabaseResults(databaseResults);
         this.setState({analysisData: allData});
       });
     }
