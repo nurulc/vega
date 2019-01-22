@@ -36,6 +36,17 @@ export const theme = createMuiTheme({
         fontColor: "#60606f",
         fontWeight: "bold"
       }
+    },
+    MuiTableCell: {
+      head: {
+        fontSize: "14px"
+      },
+      body: {
+        fontSize: "12px"
+      }
+    },
+    MuiStepper: {
+      root: {paddingLeft: "12vw"}
     }
   }
 });

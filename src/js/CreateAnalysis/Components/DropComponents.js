@@ -1,13 +1,14 @@
 import React from "react";
 import SelectedFileList from "./SelectedFileList";
-import {PageHeader} from "react-bootstrap";
 import {withStyles} from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
+import Typography from "@material-ui/core/Typography";
 
 const classes = theme => ({
   root: {
     padding: "7px",
     width: "90vw",
+    height: "100%",
     margin: "2.5% 5% 0% 5%",
     textAlign: "center",
     backgroundColor: "white",
@@ -46,12 +47,14 @@ const DropComponents = ({
     }
 
     const header = (
-      <PageHeader color="light" dragtype={inputObj.type}>
-        <small>
-          Drag and drop {inputObj.type} files here, or click to choose from file
-          system
-        </small>
-      </PageHeader>
+      <Typography
+        component="h2"
+        variant="headline"
+        gutterBottom
+        dragtype={inputObj.type}
+      >
+        Drag and drop {inputObj.type} files here
+      </Typography>
     );
     //Entire drop component with box outline
     return (

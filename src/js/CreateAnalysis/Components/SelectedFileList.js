@@ -8,8 +8,9 @@ var closeButtonStyle = {
 };
 const classes = theme => ({
   root: {
-    padding: "7px",
-    margin: "5px"
+    padding: "10px",
+    margin: "5px",
+    marginTop: "15px"
   }
 });
 

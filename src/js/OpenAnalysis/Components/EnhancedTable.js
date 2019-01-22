@@ -11,7 +11,8 @@ import {withStyles} from "@material-ui/core/styles";
 const styles = theme => ({
   root: {
     width: "100%",
-    marginTop: 15
+    marginTop: 15,
+    cursor: "pointer"
   },
   tableWrapper: {
     overflowX: "auto"

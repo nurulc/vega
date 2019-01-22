@@ -35,8 +35,8 @@ ipcMain.on("createNewAnalysis", async (event, params) => {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 800,
-    height: 800,
+    width: 900,
+    height: 900,
     webPreferences: {
       nodeIntegration: false,
       preload: __dirname + "/resources/preload.js"
