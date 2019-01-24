@@ -3,20 +3,6 @@ import isElectron from "is-electron";
 import EnhancedTable from "./Components/EnhancedTable.js";
 const ipcRenderer = window.ipcRenderer;
 
-const styles = theme => ({
-  root: {
-    width: "100%",
-    marginTop: 15
-  },
-  table: {
-    minWidth: 1020
-  },
-  tableWrapper: {
-    overflowX: "auto"
-  },
-  cellPadding: 5
-});
-
 class OpenAnalysis extends Component {
   constructor(props) {
     super(props);
@@ -26,12 +12,12 @@ class OpenAnalysis extends Component {
   }
 
   parseOutFileName(pathName) {
-    var index = pathName.lastIndexOf("/");
+    const index = pathName.lastIndexOf("/");
     return pathName.substring(index + 1);
   }
 
   formatDatabaseResults(databaseResults) {
-    var formattedFiles = databaseResults["allFiles"].reduce(
+    const formattedFiles = databaseResults["allFiles"].reduce(
       (finalObj, file) => {
         finalObj[file.$loki] = {
           pathName: file.pathName,
@@ -59,7 +45,7 @@ class OpenAnalysis extends Component {
     if (isElectron()) {
       //Handle correct file path
       ipcRenderer.on("allAnalysis", (event, databaseResults) => {
-        var allData = this.formatDatabaseResults(databaseResults);
+        const allData = this.formatDatabaseResults(databaseResults);
         this.setState({analysisData: allData});
       });
     }
@@ -75,7 +61,6 @@ class OpenAnalysis extends Component {
         <EnhancedTable
           allAnalysis={this.state.analysisData.allAnalysis}
           relationMap={this.state.analysisData.formatedRelations}
-          classes={styles}
         />
       );
     } else {

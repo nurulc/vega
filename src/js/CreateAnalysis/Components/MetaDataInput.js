@@ -1,26 +1,25 @@
 import React, {Component} from "react";
 import {FormGroup, ControlLabel, FormControl} from "react-bootstrap";
-import {NavLink} from "react-router-dom";
-import {Button} from "react-bootstrap";
-
+import EnhancedButton from "./EnhancedButton.js";
 const ipcRenderer = window.ipcRenderer;
 
 var formStyles = {
-  width: "50%",
-  margin: "20% 5% 0% 25%",
+  padding: "25vh 25vw 0vh 28vw",
   textAlign: "left",
-  height: "60vh"
+  height: "80vh"
 };
 var inputStyles = {
   marginBottom: "2%"
 };
 var backButtonStyles = {
-  float: "left",
-  marginLeft: "5%"
+  marginLeft: "5%",
+  marginTop: "12px",
+  float: "left"
 };
-var continueButtonStyles = {
+var nextButtonStyles = {
   float: "right",
-  marginRight: "5%"
+  marginRight: "5%",
+  marginTop: "12px"
 };
 
 class MetaDataInput extends Component {
@@ -34,7 +33,7 @@ class MetaDataInput extends Component {
       name: "",
       descripton: "",
       canContinue: false,
-      filePaths: this.props.location.state.filePaths
+      filePaths: this.props.filePaths
     };
   }
   componentDidMount() {
@@ -51,7 +50,6 @@ class MetaDataInput extends Component {
   }
 
   setName(e) {
-    //  var continue = e.target.value.length > 2 ? true : false;
     this.setState({
       name: e.target.value,
       canContinue: e.target.value.length > 2
@@ -69,24 +67,21 @@ class MetaDataInput extends Component {
   };
   render() {
     const backButton = (
-      <Button style={backButtonStyles}>
-        <NavLink
-          to={{
-            pathname: "/CreateAnalysis",
-            state: {filePaths: {...this.state.filePaths}}
-          }}
-        >
-          Back
-        </NavLink>
-      </Button>
+      <EnhancedButton
+        style={backButtonStyles}
+        click={() => this.props.backClick({...this.state.filePaths})}
+        text={"Back"}
+      />
     );
 
     var continueButton = "";
     if (this.state.canContinue) {
       continueButton = (
-        <Button style={continueButtonStyles} onClick={this.createNewAnalysis}>
-          Create
-        </Button>
+        <EnhancedButton
+          style={nextButtonStyles}
+          click={() => this.createNewAnalysis()}
+          text={"Next"}
+        />
       );
     }
     return (

@@ -33,3 +33,7 @@
 .content{
   margin: 10px;
 }
+body a:hover {
+  text-decoration: none;
+}
+body a:focus {outline:0;}
