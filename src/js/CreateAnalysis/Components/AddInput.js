@@ -57,9 +57,9 @@ class AddInput extends Component {
     let currStatePaths = {...this.state.filePaths};
     //Either remove or add the file to the list
     if (removeFromList) {
-      currStatePaths[type] = this.state.filePaths[type].filter(function(path) {
-        return path !== file;
-      });
+      currStatePaths[type] = this.state.filePaths[type].filter(
+        path => path !== file
+      );
     } else {
       currStatePaths[type] =
         currStatePaths[type].length === 0
@@ -132,6 +132,7 @@ class AddInput extends Component {
             fileList={this.state.filePaths}
             onDelete={this.onDelete}
           >
+            {" "}
             <SelectedFileList />
           </DropComponents>
         </div>

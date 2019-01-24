@@ -17,14 +17,11 @@ const styles = theme => ({
   }
 });
 
-function getSteps() {
-  return ["Add input files", "Specify metadata info", "Create dashboard"];
-}
+const steps = ["Add input files", "Specify metadata info", "Create dashboard"];
 
 class EnhancedProgressBar extends React.Component {
   render() {
     const {classes, activeStep} = this.props;
-    const steps = getSteps();
 
     return (
       <div className={classes.root}>
