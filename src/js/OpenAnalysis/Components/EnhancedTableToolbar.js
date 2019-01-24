@@ -3,7 +3,7 @@ import classNames from "classnames";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
-import Tooltip from "@material-ui/core/Tooltip";
+import Fab from "@material-ui/core/Fab";
 import NextIcon from "@material-ui/icons/NavigateNext";
 import AddIcon from "@material-ui/icons/Add";
 import {NavLink} from "react-router-dom";
@@ -12,7 +12,7 @@ import {lighten} from "@material-ui/core/styles/colorManipulator";
 
 const toolbarStyles = theme => ({
   root: {
-    paddingRight: theme.spacing.unit
+    paddingRight: theme.spacing.unit * 2
   },
   highlight:
     theme.palette.type === "light"
@@ -28,7 +28,7 @@ const toolbarStyles = theme => ({
     flex: "1 1 100%"
   },
   actions: {
-    color: theme.palette.text.secondary
+    color: lighten(theme.palette.secondary.light, 0.85)
   },
   title: {
     flex: "0 0 auto"
@@ -45,7 +45,7 @@ const EnhancedTableToolbar = ({selectedAnalysis, classes}) => {
     >
       <div className={classes.title}>
         {isSelected ? (
-          <Typography color="inherit" variant="subtitle1">
+          <Typography color="inherit" variant="h4">
             {selectedAnalysis.name} selected
           </Typography>
         ) : (
@@ -57,17 +57,16 @@ const EnhancedTableToolbar = ({selectedAnalysis, classes}) => {
       <div className={classes.spacer} />
       <div className={classes.actions}>
         {isSelected ? (
-          <Tooltip title="Next">
-            <IconButton aria-label="Next">
-              <NextIcon />
-            </IconButton>
-          </Tooltip>
-        ) : (
-          <IconButton aria-label="Add">
-            <NavLink to="/CreateAnalysis">
-              <AddIcon />
-            </NavLink>
+          <IconButton aria-label="Next">
+            <NextIcon />
           </IconButton>
+        ) : (
+          <NavLink to="/CreateAnalysis">
+            <Fab size="small" aria-label="Add">
+              {" "}
+              <AddIcon />
+            </Fab>{" "}
+          </NavLink>
         )}
       </div>
     </Toolbar>

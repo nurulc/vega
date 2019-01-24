@@ -7,9 +7,9 @@ export const theme = createMuiTheme({
   palette: {
     type: "light",
     primary: {
-      light: "#e9ffff",
-      main: "#b6ebed",
-      dark: "#85b9bb",
+      light: "#e2eee9",
+      main: "#c9e2d8",
+      dark: "#88ad9e",
       contrastText: "#000000"
     },
     secondary: {
@@ -35,6 +35,12 @@ export const theme = createMuiTheme({
       root: {
         fontColor: "#60606f",
         fontWeight: "bold"
+      },
+      contained: {
+        backgroundColor: "#e8e8e8",
+        color: "rgba(0, 0, 0, 0.61)",
+        boxShadow:
+          "0px 1px 5px 0px rgba(0,0,0,0.2), 0px 1px 2px 0px rgba(0,0,0,0.14), 0px 1px 1px -2px rgba(0,0,0,0.12);"
       }
     },
     MuiTableCell: {
@@ -45,8 +51,24 @@ export const theme = createMuiTheme({
         fontSize: "12px"
       }
     },
-    MuiStepper: {
-      root: {paddingLeft: "12vw"}
+    MuiStepIcon: {
+      text: {
+        fontWeight: "200",
+        fontSize: "0.85rem"
+      }
+    },
+    MuiFab: {
+      root: {
+        backgroundColor: "#e2eee9",
+        "&:hover": {
+          backgroundColor: "#c9e2d8"
+        },
+        boxShadow:
+          "0px 1px 5px 0px rgba(0,0,0,0.2), 0px 1px 2px 0px rgba(0,0,0,0.14), 0px 1px 1px -2px rgba(0,0,0,0.12);"
+      },
+      label: {
+        color: "#006060"
+      }
     }
   }
 });
@@ -77,24 +99,28 @@ export const dashboardConfig = {
 export const allAnalysisTableHeaders = [
   {
     name: "Analysis Name",
+    key: "name",
     numeric: false,
     canOrderBy: true,
     disablePadding: false
   },
   {
     name: "Description",
+    key: "description",
     numeric: false,
     canOrderBy: false,
     disablePadding: false
   },
   {
     name: "Input Files",
+    key: "filePaths",
     numeric: false,
     canOrderBy: false,
     disablePadding: false
   },
   {
     name: "Creation Date",
+    key: "date",
     numeric: false,
     canOrderBy: true,
     disablePadding: false

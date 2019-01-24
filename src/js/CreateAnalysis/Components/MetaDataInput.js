@@ -4,21 +4,22 @@ import EnhancedButton from "./EnhancedButton.js";
 const ipcRenderer = window.ipcRenderer;
 
 var formStyles = {
-  width: "50%",
-  margin: "20% 5% 0% 25%",
+  padding: "25vh 25vw 0vh 28vw",
   textAlign: "left",
-  height: "60vh"
+  height: "80vh"
 };
 var inputStyles = {
   marginBottom: "2%"
 };
 var backButtonStyles = {
-  float: "left",
-  marginLeft: "5%"
+  marginLeft: "5%",
+  marginTop: "12px",
+  float: "left"
 };
 var nextButtonStyles = {
   float: "right",
-  marginRight: "5%"
+  marginRight: "5%",
+  marginTop: "12px"
 };
 
 class MetaDataInput extends Component {

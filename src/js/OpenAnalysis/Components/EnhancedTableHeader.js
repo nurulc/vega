@@ -10,11 +10,7 @@ const TableHeader = props => {
       <TableRow>
         {allAnalysisTableHeaders.map(row => {
           return (
-            <TableCell
-              key={row.databaseColumn}
-              padding="default"
-              sortDirection={false}
-            >
+            <TableCell key={row.key} padding="default" sortDirection={false}>
               {row.name}
             </TableCell>
           );

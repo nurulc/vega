@@ -15,15 +15,15 @@ const classes = theme => ({
 });
 
 const SelectedFileList = props => {
-  const {classes} = props;
-  const {dragType, choosenFiles} = {...props};
-  const selectedPanel = choosenFiles.map(fileName => {
+  const {classes, key} = props;
+  const {dragtype, choosenFiles} = {...props};
+  const selectedPanel = choosenFiles.map((fileName, index) => {
     return (
-      <Paper className={classes.root} elevation="1">
+      <Paper className={classes.root} elevation={1} key={index}>
         {fileName}
         <span
           aria-hidden="true"
-          onClick={() => props.onDelete(fileName, dragType)}
+          onClick={() => props.onDelete(fileName, dragtype)}
           style={closeButtonStyle}
         >
           &times;
@@ -31,6 +31,6 @@ const SelectedFileList = props => {
       </Paper>
     );
   });
-  return <div>{selectedPanel}</div>;
+  return <div key={key}>{selectedPanel}</div>;
 };
 export default withStyles(classes)(SelectedFileList);

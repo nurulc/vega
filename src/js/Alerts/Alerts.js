@@ -1,10 +1,18 @@
-import React from "react";
-import Snackbar from "material-ui/Snackbar";
+import React, {Component} from "react";
+import Snackbar from "@material-ui/core/Snackbar";
+import EnhancedSnackBarContents from "./EnhancedSnackBarContents.js";
 import isElectron from "is-electron";
-import MuiThemeProvider from "material-ui/styles/MuiThemeProvider";
+import {withStyles} from "@material-ui/core/styles";
 
 const ipcRenderer = window.ipcRenderer;
-export default class Alert extends React.Component {
+
+const styles = theme => ({
+  margin: {
+    margin: theme.spacing.unit
+  }
+});
+
+class Alerts extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -33,25 +41,30 @@ export default class Alert extends React.Component {
     this.timer = setTimeout(() => {}, 1500);
   };
 
-  handleRequestClose = () => {
+  onClose = () => {
     this.setState({
       open: false
     });
   };
 
   render() {
+    const {classes} = this.props;
     return (
       <div>
-        <MuiThemeProvider>
-          <Snackbar
-            open={this.state.open}
+        <Snackbar
+          open={this.state.open}
+          onClose={this.onClose}
+          autoHideDuration={3000}
+        >
+          <EnhancedSnackBarContents
+            onClose={this.onClose}
             message={this.state.message}
-            action="X"
-            autoHideDuration={3000}
-            onRequestClose={this.handleRequestClose}
+            className={classes.margin}
+            variant="error"
           />
-        </MuiThemeProvider>
+        </Snackbar>
       </div>
     );
   }
 }
+export default withStyles(styles)(Alerts);

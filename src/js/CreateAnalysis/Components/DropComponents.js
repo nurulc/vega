@@ -3,6 +3,7 @@ import SelectedFileList from "./SelectedFileList";
 import {withStyles} from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
+import classNames from "classnames";
 
 const classes = theme => ({
   root: {
@@ -29,7 +30,7 @@ const DropComponents = ({
   classes
 }) => {
   //Create a boxed component for the user to drop and delete files
-  const dropComponents = input.map(inputObj => {
+  const dropComponents = input.map((inputObj, index) => {
     const filePaths = fileList[inputObj.type];
 
     var childrenWithMoreProps = "";
@@ -38,8 +39,9 @@ const DropComponents = ({
       childrenWithMoreProps = React.Children.map(children, child => {
         if (child.type === SelectedFileList) {
           return React.cloneElement(child, {
+            key: index,
             choosenFiles: filePaths,
-            dragType: inputObj.type,
+            dragtype: inputObj.type,
             onDelete: (fileName, type) => onDelete(fileName, type)
           });
         }
@@ -47,21 +49,16 @@ const DropComponents = ({
     }
 
     const header = (
-      <Typography
-        component="h2"
-        variant="headline"
-        gutterBottom
-        dragtype={inputObj.type}
-      >
+      <Typography variant="h5" gutterBottom dragtype={inputObj.type}>
         Drag and drop {inputObj.type} files here
       </Typography>
     );
     //Entire drop component with box outline
     return (
       <Paper
-        className={[classes.root, "dragWells", "wells"]}
-        elevation="1"
-        dragType={inputObj.type}
+        className={classNames(classes.root, "dragWells", "wells")}
+        elevation={1}
+        dragtype={inputObj.type}
       >
         {" "}
         {header} {childrenWithMoreProps}

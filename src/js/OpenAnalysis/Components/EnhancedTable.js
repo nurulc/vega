@@ -7,17 +7,16 @@ import Paper from "@material-ui/core/Paper";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import EnhancedTableHead from "./EnhancedTableHeader";
 import {withStyles} from "@material-ui/core/styles";
+const tableWrapper = {
+  overflowX: "auto"
+};
 
 const styles = theme => ({
   root: {
     width: "100%",
     marginTop: 15,
     cursor: "pointer"
-  },
-  tableWrapper: {
-    overflowX: "auto"
-  },
-  cellPadding: 5
+  }
 });
 
 class EnhancedTable extends React.Component {
@@ -33,10 +32,7 @@ class EnhancedTable extends React.Component {
   }
   handleClick = (event, id) => {
     var newSelected;
-    if (
-      this.state.selected.hasOwnProperty("$loki") &&
-      this.state.selected["$loki"] === id
-    ) {
+    if (this.isSelected(id)) {
       newSelected = {};
     } else {
       newSelected = this.props.allAnalysis.filter(
@@ -61,8 +57,8 @@ class EnhancedTable extends React.Component {
           selectedAnalysis={this.state.selected}
           classes={classes}
         />
-        <div className={classes.tableWrapper}>
-          <Table className={classes.table} aria-labelledby="tableTitle">
+        <div style={tableWrapper}>
+          <Table className={classes.table} aria-labelledby="All Analysis">
             <EnhancedTableHead
               selected={this.state.selected}
               order={this.state.order}
@@ -84,25 +80,13 @@ class EnhancedTable extends React.Component {
                     key={analysis.name}
                     selected={isSelected}
                   >
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      padding={classes.cellPadding}
-                    >
+                    <TableCell component="th" scope="row">
                       {analysis.name}
                     </TableCell>
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      padding={classes.cellPadding}
-                    >
+                    <TableCell component="th" scope="row">
                       {analysis.description}
-                    </TableCell>{" "}
-                    <TableCell
-                      component="th"
-                      scope="row"
-                      padding={classes.cellPadding}
-                    >
+                    </TableCell>
+                    <TableCell component="th" scope="row">
                       <div style={{whiteSpace: "pre-wrap"}}>
                         {relationMap[analysis.$loki]}
                       </div>

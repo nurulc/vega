@@ -12,7 +12,7 @@ const ipcRenderer = window.ipcRenderer;
 const buttonStyles = {
   float: "right",
   marginRight: "5%",
-  marginTop: "8px"
+  marginTop: "12px"
 };
 
 var flexContainer = {
@@ -20,7 +20,7 @@ var flexContainer = {
   flexDirection: "column",
   alignItems: "center",
   justifyContent: "center",
-  height: "70vh"
+  height: "78vh"
 };
 
 class AddInput extends Component {

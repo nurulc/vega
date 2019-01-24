@@ -10,7 +10,7 @@ import {
 import OpenAnalysis from "./js/OpenAnalysis/OpenAnalysis";
 import CreateAnalysis from "./js/CreateAnalysis/CreateAnalysis";
 import MetaDataInput from "./js/CreateAnalysis/Components/MetaDataInput";
-import Alert from "./js/Alerts/Alerts";
+import Alerts from "./js/Alerts/Alerts";
 import {MuiThemeProvider} from "@material-ui/core/styles";
 import {theme} from "./resources/config.js";
 
@@ -20,7 +20,7 @@ class App extends Component {
       <MuiThemeProvider theme={theme}>
         <HashRouter>
           <div>
-            <Alert />
+            <Alerts />
             <div className="content">
               <BrowserRouter>
                 <Switch>

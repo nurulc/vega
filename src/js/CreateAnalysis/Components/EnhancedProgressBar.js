@@ -6,7 +6,7 @@ import StepLabel from "@material-ui/core/StepLabel";
 
 const styles = theme => ({
   root: {
-    width: "90vw"
+    width: "100vw"
   },
   backButton: {
     marginRight: theme.spacing.unit
