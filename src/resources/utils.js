@@ -36,13 +36,13 @@ function getMissingFileHeaders(headerList, param) {
 
 export const fileParsing = (event, param) => {
   var input = param.args.target;
+
   if (inputConfig[input].hasOwnProperty("requiredFields")) {
     parseFileHeaderContents(event, param, getMissingFileHeaders).then(
       missingFileHeaders => {
         if (missingFileHeaders.length !== 0) {
           var errorMsg =
-            Messages.errorMissingRequiredHeader +
-            missingRequiredHeaders.join(", ");
+            Messages.errorMissingRequiredHeader + missingFileHeaders.join(", ");
           event.sender.send("error-WithMsg", errorMsg);
         } else {
           event.sender.send("confirmed-correctFilePath", param.args);
@@ -60,7 +60,6 @@ export const parseFileHeaderContents = async (event, param, callback) => {
     lines: [1],
     encoding: "utf8"
   });
-
   return new Promise(async function(resolve, reject) {
     await fs
       .createReadStream(path)
@@ -107,8 +106,12 @@ const lessThanMaxNumFile = param => {
 const isCorrectExt = args => {
   //Does the extension match the location it was dropped
   //Does the extension match the allowed ext
-  var allowedExt = inputConfig[args.target].extensions;
-  return allowedExt.indexOf(args.ext) > -1;
+  if (inputConfig.hasOwnProperty(args.target)) {
+    var allowedExt = inputConfig[args.target]["extensions"];
+    return allowedExt.indexOf(args.ext) > -1;
+  } else {
+    return false;
+  }
 };
 
 const isFileReadable = args => {

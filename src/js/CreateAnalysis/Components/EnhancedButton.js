@@ -8,6 +8,7 @@ const EnhancedButton = ({click, style, text}) => {
       size="large"
       variant="contained"
       style={style}
+      component="span"
     >
       {text}
     </Button>
