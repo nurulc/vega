@@ -17,9 +17,9 @@ const getExpectedFileTarget = type => {
 };
 
 //Retreive the appropriate arguments for the file being opened
-export const getFileArgs = e => {
-  e.preventDefault();
-  var files = e.dataTransfer.files;
+export const getFileArgs = (e, isDragEvent) => {
+  const files = isDragEvent ? e.dataTransfer.files : e;
+
   return Array.from(files).map(selectedFile => {
     var fileType = getFileType(selectedFile);
 

@@ -61,8 +61,12 @@ class AddInput extends Component {
     var canContinue = canContinueList.indexOf(false) > -1;
     return !canContinue;
   };
-  fileSelection = () => {
-    console.log("file selec");
+  fileSelection = test => {
+    var uploadButton = document.getElementById("fileSelectionButton");
+    var args = getFileArgs(uploadButton.files);
+    var currState = {...this.state, args};
+    ipcRenderer.send("checkForFileErrors", currState);
+    //console.log(uploadButton.files);
   };
   onDelete = (fileName, type) => {
     this.setFileList(fileName, type, true);
@@ -119,7 +123,8 @@ class AddInput extends Component {
 
         holder.ondrop = e => {
           d3.select(holder).classed("onDragOver", false);
-          var args = getFileArgs(e);
+          e.preventDefault();
+          var args = getFileArgs(e, true);
           var currState = {...this.state, args};
           ipcRenderer.send("checkForFileErrors", currState);
         };

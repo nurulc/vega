@@ -50,11 +50,12 @@ const DropComponents = ({
       <input
         style={{display: "none"}}
         accept="*"
-        id={"fileSelection"}
+        id={"fileSelectionButton"}
         multiple
+        onChange={() => fileSelection()}
         type="file"
       />
-      <label htmlFor={"fileSelection"}>
+      <label htmlFor={"fileSelectionButton"}>
         <EnhancedButton click={() => fileSelection()} text={"Upload"} />
       </label>
     </div>
