@@ -25,6 +25,7 @@ const SelectedFileListPanel = props => {
           <SelectedFileList
             key={index}
             choosenFiles={props.filePaths[typeName]}
+            type={typeName}
             onDelete={(fileName, type) => props.onDelete(fileName, type)}
           />
         </div>

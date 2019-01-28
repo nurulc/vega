@@ -19,14 +19,14 @@ const classes = theme => ({
 
 const SelectedFileList = props => {
   const {classes, key} = props;
-  const {dragtype, choosenFiles} = {...props};
+  const {type, choosenFiles} = {...props};
   const selectedPanel = choosenFiles.map((fileName, index) => {
     return (
       <Paper square={true} className={classes.root} elevation={1} key={index}>
         {fileName}
         <span
           aria-hidden="true"
-          onClick={() => props.onDelete(fileName, dragtype)}
+          onClick={() => props.onDelete(fileName, type)}
           style={closeButtonStyle}
         >
           &times;
