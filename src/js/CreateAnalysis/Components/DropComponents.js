@@ -56,7 +56,7 @@ const DropComponents = ({
         multiple
         type="file"
       />
-      <label for={"fileSelection"}>
+      <label htmlFor={"fileSelection"}>
         <EnhancedButton click={() => fileSelection()} text={"Upload"} />
       </label>
     </div>

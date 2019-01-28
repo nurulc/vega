@@ -30,32 +30,37 @@ export const checkForFileErrors = params => {
 
 //Returns a list of missing csv headers
 function getMissingFileHeaders(headerList, param) {
-  var requiredHeaders = inputConfig[param.args.target].requiredFields;
+  var requiredHeaders = inputConfig[param.target].requiredFields;
   return requiredHeaders.filter(x => !headerList.includes(x));
 }
 
-export const fileParsing = (event, param) => {
-  var input = param.args.target;
+export const fileParsing = async param => {
+  var input = param.target;
+  var alertObj = {};
 
-  if (inputConfig[input].hasOwnProperty("requiredFields")) {
-    parseFileHeaderContents(event, param, getMissingFileHeaders).then(
-      missingFileHeaders => {
-        if (missingFileHeaders.length !== 0) {
-          var errorMsg =
-            Messages.errorMissingRequiredHeader + missingFileHeaders.join(", ");
-          event.sender.send("error-WithMsg", errorMsg);
-        } else {
-          event.sender.send("confirmed-correctFilePath", param.args);
+  return new Promise(async function(resolve, reject) {
+    if (inputConfig[input].hasOwnProperty("requiredFields")) {
+      parseFileHeaderContents(param, getMissingFileHeaders).then(
+        missingFileHeaders => {
+          if (missingFileHeaders.length !== 0) {
+            alertObj["error-WithMsg"] =
+              Messages.errorMissingRequiredHeader +
+              missingFileHeaders.join(", ");
+          } else {
+            alertObj["confirmed-correctFilePath"] = param;
+          }
+          resolve(alertObj);
         }
-      }
-    );
-  } else {
-    event.sender.send("confirmed-correctFilePath", param.args);
-  }
+      );
+    } else {
+      alertObj["confirmed-correctFilePath"] = param;
+      resolve(alertObj);
+    }
+  });
 };
 
-export const parseFileHeaderContents = async (event, param, callback) => {
-  const path = param.hasOwnProperty("args") ? param.args.path : param;
+export const parseFileHeaderContents = async (param, callback) => {
+  const path = param.path;
   var getLines = getLine({
     lines: [1],
     encoding: "utf8"

@@ -19,14 +19,17 @@ const getExpectedFileTarget = type => {
 //Retreive the appropriate arguments for the file being opened
 export const getFileArgs = e => {
   e.preventDefault();
-  var fileType = getFileType(e.dataTransfer.files[0]);
+  var files = e.dataTransfer.files;
+  return Array.from(files).map(selectedFile => {
+    var fileType = getFileType(selectedFile);
 
-  var target = getExpectedFileTarget(fileType);
-  var filePath = e.dataTransfer.files[0].path;
-  //check for error
-  return {
-    path: filePath,
-    target: target,
-    ext: fileType
-  };
+    var target = getExpectedFileTarget(fileType);
+    var filePath = selectedFile.path;
+    //check for error
+    return {
+      path: filePath,
+      target: target,
+      ext: fileType
+    };
+  });
 };
