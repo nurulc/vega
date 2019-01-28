@@ -9,7 +9,7 @@ export const getFileType = file => {
 const getExpectedFileTarget = type => {
   var fileType = "DNE";
   Object.keys(inputConfig).map(input => {
-    if (inputConfig[input]["extensions"].indexOf(type) != -1) {
+    if (inputConfig[input]["extensions"].indexOf(type) !== -1) {
       fileType = inputConfig[input]["type"];
     }
   });

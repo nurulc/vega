@@ -5,7 +5,6 @@ import DropComponents from "./DropComponents.js";
 import SelectedFileListPanel from "./SelectedFileListPanel";
 import NavigationButton from "./NavigationButton.js";
 import {getFileArgs} from "../utils/utils.js";
-import {withStyles} from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import * as d3 from "d3";
 import "../style.css";

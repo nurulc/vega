@@ -1,9 +1,6 @@
 import React, {Component} from "react";
-import {FormGroup, ControlLabel, FormControl} from "react-bootstrap";
 import NavigationButton from "./NavigationButton.js";
-
 import TextField from "@material-ui/core/TextField";
-
 import {withStyles} from "@material-ui/core/styles";
 
 const ipcRenderer = window.ipcRenderer;
@@ -33,14 +30,6 @@ const styles = theme => ({
     width: 200
   }
 });
-var formStyles = {
-  padding: "25vh 25vw 0vh 28vw",
-  textAlign: "left",
-  height: "80vh"
-};
-var inputStyles = {
-  marginBottom: "2%"
-};
 var backButtonStyles = {
   marginLeft: "10vw",
   marginTop: "-50px",
