@@ -1,25 +1,44 @@
 import React, {Component} from "react";
-import {FormGroup, ControlLabel, FormControl} from "react-bootstrap";
-import EnhancedButton from "./EnhancedButton.js";
+import NavigationButton from "./NavigationButton.js";
+import TextField from "@material-ui/core/TextField";
+import {withStyles} from "@material-ui/core/styles";
+
 const ipcRenderer = window.ipcRenderer;
 
-var formStyles = {
-  padding: "25vh 25vw 0vh 28vw",
-  textAlign: "left",
-  height: "80vh"
-};
-var inputStyles = {
-  marginBottom: "2%"
-};
+const styles = theme => ({
+  container: {
+    display: "flex",
+    flexDirection: "column",
+    padding: "20vh 25vw 0vh 28vw",
+    textAlign: "left",
+    height: "80vh",
+    alignItems: "center"
+  },
+  textField: {
+    marginLeft: theme.spacing.unit,
+    marginRight: theme.spacing.unit,
+    width: 400,
+    fontSize: 25
+  },
+  inputField: {
+    fontSize: 25
+  },
+  dense: {
+    marginTop: 19
+  },
+  menu: {
+    width: 200
+  }
+});
 var backButtonStyles = {
-  marginLeft: "5%",
-  marginTop: "12px",
+  marginLeft: "10vw",
+  marginTop: "-50px",
   float: "left"
 };
 var nextButtonStyles = {
   float: "right",
-  marginRight: "5%",
-  marginTop: "12px"
+  marginRight: "10vw",
+  marginTop: "-50px"
 };
 
 class MetaDataInput extends Component {
@@ -62,51 +81,48 @@ class MetaDataInput extends Component {
     });
   }
   createNewAnalysis = () => {
-    console.log(this.state);
     ipcRenderer.send("createNewAnalysis", this.state);
   };
   render() {
+    var {classes} = this.props;
     const backButton = (
-      <EnhancedButton
+      <NavigationButton
         style={backButtonStyles}
         click={() => this.props.backClick({...this.state.filePaths})}
-        text={"Back"}
+        isBack={true}
       />
     );
 
     var continueButton = "";
     if (this.state.canContinue) {
       continueButton = (
-        <EnhancedButton
+        <NavigationButton
           style={nextButtonStyles}
           click={() => this.createNewAnalysis()}
-          text={"Next"}
         />
       );
     }
     return (
       <div>
-        <form style={formStyles}>
-          <FormGroup
-            controlId="formBasicText"
-            validationState={this.getValidationState()}
-          >
-            <ControlLabel>Analysis Name:</ControlLabel>
-            <FormControl
-              type="text"
-              name={this.state.name}
-              onChange={this.setName}
-              style={inputStyles}
-            />
-            <ControlLabel>Description:</ControlLabel>
-            <FormControl
-              type="text"
-              description={this.state.description}
-              onChange={this.setDescription}
-              style={inputStyles}
-            />
-            <FormControl.Feedback />
-          </FormGroup>
+        <form className={classes.container}>
+          <TextField
+            id="name"
+            label="Analysis Name"
+            inputStyle={{fontSize: "50px"}}
+            className={classes.textField}
+            value={this.state.name}
+            onChange={this.setName}
+            margin="normal"
+          />
+          <TextField
+            multiline
+            id="description"
+            label="Description"
+            className={classes.textField}
+            value={this.state.description}
+            onChange={this.setDescription}
+            margin="normal"
+          />
         </form>
         {backButton}
         {continueButton}
@@ -115,4 +131,4 @@ class MetaDataInput extends Component {
   }
 }
 
-export default MetaDataInput;
+export default withStyles(styles)(MetaDataInput);

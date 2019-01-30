@@ -7,13 +7,22 @@ import collections from "./database/datastores.js";
 let mainWindow;
 
 //Send out an error alert
-ipcMain.on("checkForFileErrors", (event, params) => {
-  var errors = checkForFileErrors(params);
-  if (errors) {
-    event.sender.send("error-WithMsg", errors);
-  } else {
-    fileParsing(event, params);
-  }
+ipcMain.on("checkForFileErrors", async (event, allParams) => {
+  allParams["args"].map(async param => {
+    var paramCheckObj = Object.assign({}, allParams);
+    paramCheckObj["args"] = Object.assign({}, param);
+
+    var errors = checkForFileErrors(paramCheckObj);
+    if (errors) {
+      event.sender.send("error-WithMsg", errors);
+    } else {
+      await fileParsing(param).then(eventPromise => {
+        Object.keys(eventPromise).map(eventType => {
+          event.sender.send(eventType, eventPromise[eventType]);
+        });
+      });
+    }
+  });
 });
 
 ipcMain.on("getAllAnalysis", event => {

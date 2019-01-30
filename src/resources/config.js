@@ -2,7 +2,8 @@ import {createMuiTheme} from "@material-ui/core/styles";
 
 export const theme = createMuiTheme({
   typography: {
-    useNextVariants: true
+    useNextVariants: true,
+    fontFamily: '"Helvetica Neue"'
   },
   palette: {
     type: "light",
@@ -43,6 +44,19 @@ export const theme = createMuiTheme({
           "0px 1px 5px 0px rgba(0,0,0,0.2), 0px 1px 2px 0px rgba(0,0,0,0.14), 0px 1px 1px -2px rgba(0,0,0,0.12);"
       }
     },
+    MuiStepLabel: {
+      label: {
+        fontSize: 11
+      }
+    },
+    MuiInputBase: {
+      root: {
+        fontSize: 20
+      }
+    },
+    MuiFormLabel: {
+      root: {fontSize: 20}
+    },
     MuiTableCell: {
       head: {
         fontSize: "14px"
@@ -56,6 +70,9 @@ export const theme = createMuiTheme({
         fontWeight: "200",
         fontSize: "0.85rem"
       }
+    },
+    MuiStepper: {
+      root: {backgroundColor: "#fdfdfd"}
     },
     MuiFab: {
       root: {

@@ -2,24 +2,37 @@ import React, {Component} from "react";
 import {inputConfig, dashboardConfig} from "../../../resources/config.js";
 import isElectron from "is-electron";
 import DropComponents from "./DropComponents.js";
-import SelectedFileList from "./SelectedFileList";
-import EnhancedButton from "./EnhancedButton.js";
+import SelectedFileListPanel from "./SelectedFileListPanel";
+import NavigationButton from "./NavigationButton.js";
 import {getFileArgs} from "../utils/utils.js";
+import Paper from "@material-ui/core/Paper";
 import * as d3 from "d3";
 import "../style.css";
 const ipcRenderer = window.ipcRenderer;
 
-const buttonStyles = {
+const listStyles = {
   float: "right",
-  marginRight: "5%",
-  marginTop: "12px"
+  width: "60vw",
+  height: "100%",
+  margin: "2.5% 5% 0% 0%",
+  textAlign: "center",
+  backgroundColor: "white",
+  borderRadius: "4px",
+  flexDirection: "column",
+  display: "flex",
+  boxShadow: "inset 0 1px 1px rgba(0,0,0,0)"
 };
 
-var flexContainer = {
+const buttonStyles = {
+  float: "right",
+  marginRight: "5vw",
+  marginTop: "-20px"
+};
+
+const flexContainer = {
   display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  justifyContent: "center",
+  flexDirection: "row",
+  justifyContent: "space-round",
   height: "78vh"
 };
 
@@ -48,7 +61,13 @@ class AddInput extends Component {
     var canContinue = canContinueList.indexOf(false) > -1;
     return !canContinue;
   };
-
+  fileSelection = test => {
+    var uploadButton = document.getElementById("fileSelectionButton");
+    var args = getFileArgs(uploadButton.files);
+    var currState = {...this.state, args};
+    ipcRenderer.send("checkForFileErrors", currState);
+    //console.log(uploadButton.files);
+  };
   onDelete = (fileName, type) => {
     this.setFileList(fileName, type, true);
   };
@@ -104,7 +123,8 @@ class AddInput extends Component {
 
         holder.ondrop = e => {
           d3.select(holder).classed("onDragOver", false);
-          var args = getFileArgs(e);
+          e.preventDefault();
+          var args = getFileArgs(e, true);
           var currState = {...this.state, args};
           ipcRenderer.send("checkForFileErrors", currState);
         };
@@ -112,14 +132,22 @@ class AddInput extends Component {
     }
   }
   render() {
+    if (this.state.filePaths !== null) {
+      var selectedFilePanelList = (
+        <SelectedFileListPanel
+          filePaths={this.state.filePaths}
+          onDelete={this.onDelete}
+        />
+      );
+    }
+
     //If min # of files reached add the next button
     var continueButton = "";
     if (this.state.proceedToMeta) {
       continueButton = (
-        <EnhancedButton
+        <NavigationButton
           style={buttonStyles}
           click={() => this.props.nextClick({...this.state.filePaths})}
-          text={"Next"}
         />
       );
     }
@@ -131,10 +159,9 @@ class AddInput extends Component {
             input={this.state.input}
             fileList={this.state.filePaths}
             onDelete={this.onDelete}
-          >
-            {" "}
-            <SelectedFileList />
-          </DropComponents>
+            fileSelection={this.fileSelection}
+          />
+          <Paper style={listStyles}> {selectedFilePanelList} </Paper>
         </div>
         {continueButton}
       </div>

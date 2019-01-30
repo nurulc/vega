@@ -1,3 +1,4 @@
+import {inputConfig} from "../../../resources/config";
 //Retrieve file extension from a given file path
 export const getFileType = file => {
   var fileName = file.name;
@@ -5,17 +6,30 @@ export const getFileType = file => {
   return fileName.substring(index + 1);
 };
 
-//Retreive the appropriate arguments for the file being opened
-export const getFileArgs = e => {
-  e.preventDefault();
-  var dropTargetType = e.currentTarget.attributes.dragtype.nodeValue;
+export const getExpectedFileTarget = type => {
+  var fileType = "DNE";
+  Object.keys(inputConfig).map(input => {
+    if (inputConfig[input]["extensions"].indexOf(type) !== -1) {
+      fileType = inputConfig[input]["type"];
+    }
+  });
+  return fileType;
+};
 
-  var fileType = getFileType(e.dataTransfer.files[0]);
-  var filePath = e.dataTransfer.files[0].path;
-  //check for error
-  return {
-    path: filePath,
-    target: dropTargetType,
-    ext: fileType
-  };
+//Retreive the appropriate arguments for the file being opened
+export const getFileArgs = (e, isDragEvent) => {
+  const files = isDragEvent ? e.dataTransfer.files : e;
+
+  return Array.from(files).map(selectedFile => {
+    var fileType = getFileType(selectedFile);
+
+    var target = getExpectedFileTarget(fileType);
+    var filePath = selectedFile.path;
+    //check for error
+    return {
+      path: filePath,
+      target: target,
+      ext: fileType
+    };
+  });
 };

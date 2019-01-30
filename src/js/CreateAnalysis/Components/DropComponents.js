@@ -1,14 +1,14 @@
 import React from "react";
-import SelectedFileList from "./SelectedFileList";
 import {withStyles} from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
 import classNames from "classnames";
+import EnhancedButton from "./EnhancedButton.js";
 
 const classes = theme => ({
   root: {
     padding: "7px",
-    width: "90vw",
+    width: "35vw",
     height: "100%",
     margin: "2.5% 5% 0% 5%",
     textAlign: "center",
@@ -21,51 +21,58 @@ const classes = theme => ({
     fontWeight: "bold"
   }
 });
+const headerStyles = {
+  margin: "0 auto",
+  paddingTop: "60%"
+};
 const DropComponents = ({
   input,
   fileList,
-  fileSelectionButton,
+  fileSelection,
   children,
   onDelete,
   classes
 }) => {
   //Create a boxed component for the user to drop and delete files
-  const dropComponents = input.map((inputObj, index) => {
-    const filePaths = fileList[inputObj.type];
 
-    var childrenWithMoreProps = "";
-    //If there are any already selected files
-    if (filePaths.length !== 0) {
-      childrenWithMoreProps = React.Children.map(children, child => {
-        if (child.type === SelectedFileList) {
-          return React.cloneElement(child, {
-            key: index,
-            choosenFiles: filePaths,
-            dragtype: inputObj.type,
-            onDelete: (fileName, type) => onDelete(fileName, type)
-          });
-        }
-      });
-    }
-
-    const header = (
-      <Typography variant="h5" gutterBottom dragtype={inputObj.type}>
-        Drag and drop {inputObj.type} files here
+  const header = (
+    <div>
+      <Typography variant="h5" gutterBottom>
+        Drag and drop files here
       </Typography>
-    );
-    //Entire drop component with box outline
-    return (
-      <Paper
-        className={classNames(classes.root, "dragWells", "wells")}
-        elevation={1}
-        dragtype={inputObj.type}
-      >
-        {" "}
-        {header} {childrenWithMoreProps}
-      </Paper>
-    );
-  });
-  return dropComponents;
+      <Typography variant="h5" gutterBottom>
+        or
+      </Typography>
+    </div>
+  );
+  const uploadButton = type => (
+    <div>
+      <input
+        style={{display: "none"}}
+        accept="*"
+        id={"fileSelectionButton"}
+        multiple
+        onChange={() => fileSelection()}
+        type="file"
+      />
+      <label htmlFor={"fileSelectionButton"}>
+        <EnhancedButton text={"Upload"} />
+      </label>
+    </div>
+  );
+  //Entire drop component with box outline
+  return (
+    <Paper
+      className={classNames(classes.root, "dragWells", "wells")}
+      elevation={1}
+    >
+      {" "}
+      <div style={headerStyles}>
+        {header}
+        {uploadButton()}
+      </div>
+    </Paper>
+  );
 };
 
 export default withStyles(classes)(DropComponents);
