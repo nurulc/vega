@@ -8,6 +8,7 @@
     "@material/typography": "^0.43.0",
     "app": "^0.1.0",
     "app-root-path": "^2.1.0",
+    "bootstrap": "^4.2.1",
     "browser-window": "^0.4.0",
     "classnames": "^2.2.6",
     "csvtojson": "^2.0.8",
@@ -19,15 +20,16 @@
     "eslint-plugin-react": "^7.11.1",
     "event-stream": "^4.0.1",
     "fast-csv": "^2.4.1",
+    "foreman": "^3.0.1",
     "fs": "0.0.1-security",
     "get-line": "^0.1.2",
     "is-electron": "^2.1.0",
     "lokijs": "^1.5.6",
-    "material-ui": "^0.20.2",
     "nedb": "^1.8.0",
     "nedb-promise": "^2.0.1",
     "nf": "0.0.3",
     "node-fs": "^0.1.7",
+    "python-shell": "^1.0.7",
     "react": "^16.6.3",
     "react-alert": "^4.0.4",
     "react-alert-template-basic": "^1.0.0",
@@ -68,7 +70,8 @@
     "react-start": "react-scripts start",
     "pack": "build --dir",
     "dist": "npm run build && build",
-    "postinstall": "install-app-deps"
+    "postinstall": "install-app-deps",
+    "docs": "npm start --prefix ./docusaurus/website"
   },
   "eslintConfig": {
     "extends": "react-app"

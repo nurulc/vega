@@ -6,7 +6,7 @@ export const getFileType = file => {
   return fileName.substring(index + 1);
 };
 
-const getExpectedFileTarget = type => {
+export const getExpectedFileTarget = type => {
   var fileType = "DNE";
   Object.keys(inputConfig).map(input => {
     if (inputConfig[input]["extensions"].indexOf(type) !== -1) {

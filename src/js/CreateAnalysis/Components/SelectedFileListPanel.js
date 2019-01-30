@@ -11,9 +11,9 @@ const containerStyles = {
   backgroundColor: "#fdfdfd"
 };
 
-const SelectedFileListPanel = props => {
+const SelectedFileListPanel = ({filePaths, onDelete}) => {
   var selectedInputList;
-  if (props.filePaths !== null) {
+  if (filePaths !== null) {
     selectedInputList = Object.keys(inputConfig).map((inputObj, index) => {
       var typeName = inputConfig[inputObj].type;
       return (
@@ -24,9 +24,9 @@ const SelectedFileListPanel = props => {
           <Divider variant="middle" />
           <SelectedFileList
             key={index}
-            choosenFiles={props.filePaths[typeName]}
+            choosenFiles={filePaths[typeName]}
             type={typeName}
-            onDelete={(fileName, type) => props.onDelete(fileName, type)}
+            onDelete={(fileName, type) => onDelete(fileName, type)}
           />
         </div>
       );

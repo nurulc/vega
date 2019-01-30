@@ -111,12 +111,10 @@ const lessThanMaxNumFile = param => {
 const isCorrectExt = args => {
   //Does the extension match the location it was dropped
   //Does the extension match the allowed ext
-  if (inputConfig.hasOwnProperty(args.target)) {
-    var allowedExt = inputConfig[args.target]["extensions"];
-    return allowedExt.indexOf(args.ext) > -1;
-  } else {
-    return false;
-  }
+  return inputConfig.hasOwnProperty(args.target) &&
+    inputConfig[args.target]["extensions"].indexOf(args.ext) > -1
+    ? true
+    : false;
 };
 
 const isFileReadable = args => {
