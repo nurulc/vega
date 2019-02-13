@@ -14,7 +14,6 @@ class CreateAnalysis extends Component {
     };
   }
   increaseStep = filePaths => {
-    console.log(filePaths);
     this.setState({
       activeStep: this.state.activeStep + 1,
       filePaths: filePaths

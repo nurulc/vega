@@ -61,13 +61,14 @@ class AddInput extends Component {
     var canContinue = canContinueList.indexOf(false) > -1;
     return !canContinue;
   };
-  fileSelection = test => {
+
+  fileSelection = () => {
     var uploadButton = document.getElementById("fileSelectionButton");
     var args = getFileArgs(uploadButton.files);
     var currState = {...this.state, args};
     ipcRenderer.send("checkForFileErrors", currState);
-    //console.log(uploadButton.files);
   };
+
   onDelete = (fileName, type) => {
     this.setFileList(fileName, type, true);
   };

@@ -35,7 +35,7 @@ class EnhancedTable extends React.Component {
     if (this.isSelected(id)) {
       newSelected = {};
     } else {
-      newSelected = this.props.allAnalysis.filter(
+      newSelected = this.props.analysisData.allAnalysis.filter(
         analysis => analysis.$loki === id
       )[0];
     }
@@ -47,9 +47,13 @@ class EnhancedTable extends React.Component {
     this.state.selected["$loki"] === id;
 
   render() {
-    const {classes} = this.props;
-    const data = this.props.allAnalysis;
-    const relationMap = this.props.relationMap;
+    const {classes, analysisData} = this.props;
+    const data = analysisData.hasOwnProperty("allAnalysis")
+      ? analysisData.allAnalysis
+      : [];
+    const relationMap = analysisData.hasOwnProperty("formatedRelations")
+      ? analysisData.formatedRelations
+      : [];
 
     return (
       <Paper className={classes.root}>

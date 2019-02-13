@@ -28,7 +28,7 @@ class Alerts extends Component {
       });
     }
   }
-  componentWillUnMount() {
+  componentWillUnmount() {
     clearTimeout(this.timer);
   }
 

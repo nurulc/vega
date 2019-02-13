@@ -1,7 +1,15 @@
-import {parseFileContents} from "../resources/utils.js";
+import {
+  parseFileContents,
+  pythonParseFileContents
+} from "../resources/utils.js";
 const fs = require("fs");
 const appRoot = require("app-root-path");
 const rootPath = appRoot + "/src/database/temp/";
+import {
+  getFileTypeByFileName,
+  getExpectedFileTargetByType
+} from "../js/CreateAnalysis/utils/utils";
+import {inputConfig} from "../resources/config";
 
 //Returns [analysisID,[fileIDs]] of a created analysis
 export const createAnalysis = async (database, params) => {
@@ -36,7 +44,6 @@ async function createAnalysisFileRelations(analysisID, allFileIDs, database) {
 }
 async function getAllFileIds(database, params) {
   var sortedFileIDList = sortFileEntries(database, params.filePaths);
-
   //Return the id's from the files table for each file
   return new Promise(async (resolve, reject) => {
     if (sortedFileIDList.missingDbEntries.length !== 0) {
@@ -58,7 +65,18 @@ const getMissingFileIds = (fileEntries, database) => {
   return Promise.all(
     //For every missing json file, parse and save
     fileEntries["missingDbEntries"].map(async filePathObj => {
-      return await parseFileContents(filePathObj.pathName, saveFile);
+      var fileExt = getFileTypeByFileName(filePathObj);
+      var fileType = getExpectedFileTargetByType(fileExt);
+
+      var needsPythonLoading = inputConfig[fileType].hasOwnProperty(
+        "pythonLoader"
+      );
+
+      if (needsPythonLoading) {
+        return await pythonParseFileContents(filePathObj, saveFile);
+      } else {
+        return await parseFileContents(filePathObj, saveFile);
+      }
     })
   ).then(newJsonPathList => {
     //Return a list of new file IDs
@@ -66,13 +84,19 @@ const getMissingFileIds = (fileEntries, database) => {
   });
 };
 
+//Create a random 5 letter/digit json file name
+export const getRandomJsonFileName = () => {
+  return (
+    Math.random()
+      .toString(36)
+      .substr(2, 5) + ".json"
+  );
+};
+
 //Save the parsed input file as a json
 const saveFile = async (results, param) => {
   var json = JSON.stringify(results);
-  var fileName =
-    Math.random()
-      .toString(36)
-      .substr(2, 5) + ".json";
+  var fileName = getRandomJsonFileName();
 
   var filePath = rootPath + fileName;
 
@@ -83,9 +107,8 @@ const saveFile = async (results, param) => {
       } else {
         var newFileObj = {
           jsonPath: fileName,
-          pathName: param
+          pathName: param.pathName
         };
-
         resolve(newFileObj);
       }
     });
@@ -124,7 +147,7 @@ function getParsedFilePathObj(filePathObj) {
   return parsedFilePathObjList;
 }
 //Create a new database analysis entry
-export function getAllAnalysis(event, db) {
+export function getAllAnalysis(db) {
   var allAnalysis = db.analysis.find({$loki: {$ne: null}});
   var allAnalysisIDs = allAnalysis.map(analysis => {
     return {analysisID: analysis.$loki};

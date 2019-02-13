@@ -1,5 +1,7 @@
 import {createMuiTheme} from "@material-ui/core/styles";
-
+export const dockerCommands = {
+  pythonParseFile: "docker run vega_loader --name loader"
+};
 export const theme = createMuiTheme({
   typography: {
     useNextVariants: true,
@@ -101,6 +103,7 @@ export const inputConfig = {
   tree: {
     type: "tree",
     name: "GML",
+    pythonLoader: "loader/vega/vega_loader.py",
     extensions: ["gml", "newick"],
     maxFiles: 1,
     minFiles: 1

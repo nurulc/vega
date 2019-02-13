@@ -55,18 +55,12 @@ class OpenAnalysis extends Component {
   }
 
   render() {
-    var analysisTable;
-    if (this.state.analysisData.hasOwnProperty("allAnalysis")) {
-      analysisTable = (
-        <EnhancedTable
-          allAnalysis={this.state.analysisData.allAnalysis}
-          relationMap={this.state.analysisData.formatedRelations}
-        />
-      );
-    } else {
-      analysisTable = "Please create an analysis";
-    }
-    return <div>{analysisTable}</div>;
+    return (
+      <div>
+        {" "}
+        <EnhancedTable analysisData={this.state.analysisData} />
+      </div>
+    );
   }
 }
 export default OpenAnalysis;

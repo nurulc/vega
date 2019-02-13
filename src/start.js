@@ -26,7 +26,7 @@ ipcMain.on("checkForFileErrors", async (event, allParams) => {
 });
 
 ipcMain.on("getAllAnalysis", event => {
-  var databaseResults = getAllAnalysis(event, collections);
+  var databaseResults = getAllAnalysis(collections);
   event.sender.send("allAnalysis", databaseResults);
 });
 

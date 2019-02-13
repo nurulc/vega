@@ -2,7 +2,9 @@ var fs = require("fs");
 const path = require("path");
 const url = require("url");
 import {Messages} from "../js/Alerts/ErrorConsts";
-import {inputConfig} from "./config";
+import {getRandomJsonFileName} from "../database/utils";
+import {inputConfig, dockerCommands} from "./config";
+const exec = require("child_process").exec;
 const csv = require("fast-csv");
 const getLine = require("get-line");
 const es = require("event-stream");
@@ -81,8 +83,18 @@ export const parseFileHeaderContents = async (param, callback) => {
   });
 };
 
+export const pythonParseFileContents = async (param, callback) => {
+  var command = dockerCommands.pythonParseFile;
+  return new Promise(async function(resolve, reject) {
+    exec(command, async function(error, stdout, stderr) {
+      var result = await callback(stdout, param);
+      resolve(result);
+    });
+  });
+};
+
 export const parseFileContents = async (param, callback) => {
-  const path = param.hasOwnProperty("args") ? param.args.path : param;
+  const path = param.pathName;
 
   var finalJson = [];
   return new Promise(async function(resolve, reject) {
