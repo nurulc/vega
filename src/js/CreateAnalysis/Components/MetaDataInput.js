@@ -47,34 +47,27 @@ class MetaDataInput extends Component {
 
     this.setName = this.setName.bind(this);
     this.setDescription = this.setDescription.bind(this);
+    this.setJiraId = this.setJiraId.bind(this);
 
     this.state = {
       name: "",
       descripton: "",
+      jiraId: "",
       canContinue: false,
-      filePaths: this.props.filePaths
+      filePaths: this.props.filePaths,
+      isInProgress: false
     };
   }
-  componentDidMount() {
-    ipcRenderer.on("analysisAdded", (event, args) => {
-      //Display files that were added
-      //console.log(args);
-    });
-  }
-  getValidationState() {
-    const length = this.state.name.length;
-    if (length > 3) return "success";
-    else if (length > 0) return "error";
-    return null;
-  }
-
   setName(e) {
     this.setState({
-      name: e.target.value,
-      canContinue: e.target.value.length > 2
+      name: e.target.value
     });
   }
-
+  setJiraId(e) {
+    this.setState({
+      jiraId: e.target.value
+    });
+  }
   setDescription(e) {
     this.setState({
       description: e.target.value
@@ -82,6 +75,7 @@ class MetaDataInput extends Component {
   }
   createNewAnalysis = () => {
     ipcRenderer.send("createNewAnalysis", this.state);
+    this.props.nextClick({...this.state.filePaths});
   };
   render() {
     var {classes} = this.props;
@@ -94,7 +88,7 @@ class MetaDataInput extends Component {
     );
 
     var continueButton = "";
-    if (this.state.canContinue) {
+    if (this.state.name.length > 4 && this.state.jiraId.length > 5) {
       continueButton = (
         <NavigationButton
           style={nextButtonStyles}
@@ -112,6 +106,15 @@ class MetaDataInput extends Component {
             className={classes.textField}
             value={this.state.name}
             onChange={this.setName}
+            margin="normal"
+          />{" "}
+          <TextField
+            id="jiraId"
+            label="Jira ID"
+            inputStyle={{fontSize: "50px"}}
+            className={classes.textField}
+            value={this.state.jiraId}
+            onChange={this.setJiraId}
             margin="normal"
           />
           <TextField
