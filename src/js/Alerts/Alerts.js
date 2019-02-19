@@ -23,8 +23,8 @@ class Alerts extends Component {
   }
   componentDidMount() {
     if (isElectron()) {
-      ipcRenderer.on("error-WithMsg", (event, msg) => {
-        this.handleError(msg);
+      ipcRenderer.on("error-WithMsg", (event, msg, timeOut) => {
+        this.handleError(msg, timeOut);
       });
     }
   }
@@ -32,13 +32,14 @@ class Alerts extends Component {
     clearTimeout(this.timer);
   }
 
-  handleError = msg => {
+  handleError = (msg, setTimeOut) => {
+    var timeOut = setTimeOut ? setTimeOut : 1500;
     this.setState({
       open: true,
       message: msg
     });
 
-    this.timer = setTimeout(() => {}, 1500);
+    this.timer = setTimeout(() => {}, timeOut);
   };
 
   onClose = () => {

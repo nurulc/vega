@@ -91,6 +91,9 @@ class EnhancedTable extends React.Component {
                       {analysis.description}
                     </TableCell>
                     <TableCell component="th" scope="row">
+                      {analysis.jiraId}
+                    </TableCell>
+                    <TableCell component="th" scope="row">
                       <div style={{whiteSpace: "pre-wrap"}}>
                         {relationMap[analysis.$loki]}
                       </div>

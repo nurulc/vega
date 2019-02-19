@@ -16,10 +16,11 @@ const SelectedFileListPanel = ({filePaths, onDelete}) => {
   if (filePaths !== null) {
     selectedInputList = Object.keys(inputConfig).map((inputObj, index) => {
       var typeName = inputConfig[inputObj].type;
+      var displayName = inputConfig[inputObj].displayName;
       return (
         <div style={containerStyles}>
           <Typography variant="h5" gutterBottom>
-            Selected {typeName} files
+            Selected {displayName} files
           </Typography>
           <Divider variant="middle" />
           <SelectedFileList
