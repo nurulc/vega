@@ -1,7 +1,17 @@
 import {createMuiTheme} from "@material-ui/core/styles";
+const path = require("path");
+var os = require("os");
+var root = require("os").homedir();
+
 export const dockerCommands = {
-  pythonParseFile: "docker run vega_loader --name loader"
+  pythonParseCommand:
+    "docker run --net=lyra-graphql_default -e YAMLVAR={yaml} -v " +
+    root +
+    ":" +
+    root +
+    " vega_loader"
 };
+
 export const theme = createMuiTheme({
   typography: {
     useNextVariants: true,
@@ -93,15 +103,17 @@ export const theme = createMuiTheme({
 });
 
 export const inputConfig = {
-  segment: {
-    type: "segment",
+  segs: {
+    type: "segs",
+    displayName: "segement",
     name: "CSV",
     extensions: ["csv"],
-    requiredFields: ["iteration", "locus", "fpr", "fnr", "value"],
+    requiredFields: ["chr", "start", "end", "state", "median", "cell_id"],
     minFiles: 1
   },
   tree: {
     type: "tree",
+    displayName: "tree",
     name: "GML",
     pythonLoader: "loader/vega/vega_loader.py",
     extensions: ["gml", "newick"],
@@ -111,10 +123,11 @@ export const inputConfig = {
 };
 export const dashboardConfig = {
   name: "Lyra Dashboard",
-  input: [inputConfig.segment, inputConfig.tree],
-  filePaths: {segment: [], tree: []},
+  project: "fitness",
+  input: [inputConfig.segs, inputConfig.tree],
+  filePaths: {segs: [], tree: []},
   databasePath: "/src/database/db/database.db",
-  collectionsList: ["files", "analysis", "relations"]
+  collectionsList: ["files", "analysis", "relations", "versions"]
 };
 export const allAnalysisTableHeaders = [
   {
@@ -127,6 +140,13 @@ export const allAnalysisTableHeaders = [
   {
     name: "Description",
     key: "description",
+    numeric: false,
+    canOrderBy: false,
+    disablePadding: false
+  },
+  {
+    name: "Jira ID",
+    key: "jiraId",
     numeric: false,
     canOrderBy: false,
     disablePadding: false
