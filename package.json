@@ -40,8 +40,8 @@
     "react-sortable-hoc": "^0.8.4",
     "react-transition-group": "^2.3.0",
     "reactstrap": "^6.5.0",
-    "sqlite3": "^4.0.4",
     "strap": "^0.1.0",
+    "write-yaml": "^1.0.0",
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
@@ -60,7 +60,7 @@
   "homepage": "./",
   "main": "src/start.js",
   "scripts": {
-    "start": "nf start -p 3000",
+    "start": "nf start -p 3300",
     "build": "react-scripts build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
