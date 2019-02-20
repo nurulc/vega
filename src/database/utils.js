@@ -11,11 +11,8 @@ import {
   getFileTypeByFileName,
   getExpectedFileTargetByType
 } from "../js/CreateAnalysis/utils/utils";
-import {
-  dashboardConfig,
-  inputConfig,
-  dockerCommands
-} from "../resources/config";
+import {dashboardConfig, inputConfig, sysCommands} from "../resources/config";
+import {Messages} from "../js/Alerts/ErrorConsts";
 
 //Returns [analysisID,[fileIDs]] of a created analysis
 export const createAnalysis = async (database, params, event) => {
@@ -39,6 +36,7 @@ export const createAnalysis = async (database, params, event) => {
     params,
     event
   );
+
   return finalExecute;
 };
 
@@ -49,9 +47,8 @@ async function attachDockerComponenets(database, analysisID, params, event) {
     params,
     event
   );
-
-  event.sender.send("test", yamlFilePath);
   var finalExecute = await executeYamlLoad(yamlFilePath, event);
+
   return finalExecute;
 }
 
@@ -69,15 +66,18 @@ var lyraYamlFile = function(params) {
   };
 };
 const executeYamlLoad = async (yamlFilePath, event) => {
-  var loadYamlCommand = dockerCommands.pythonParseCommand.replace(
+  var loadYamlCommand = sysCommands.pythonParseCommand.replace(
     "{yaml}",
     yamlFilePath
   );
 
   return new Promise((resolve, reject) => {
+    event.sender.send("isRoundProgressActive", true);
     var load = exec(loadYamlCommand);
+
     load.stderr.on("data", data => {
       event.sender.send("error-WithMsg", data, 30000);
+      reject();
     });
 
     load.stdout.on("data", data => {
@@ -87,6 +87,7 @@ const executeYamlLoad = async (yamlFilePath, event) => {
       } else if (liveOutput.indexOf("-SegDone") !== -1) {
         event.sender.send("analysisLoadingStep", liveOutput, "Segment");
       } else if (liveOutput.indexOf("-AnalysisDone") !== -1) {
+        event.sender.send("isRoundProgressActive", false);
         event.sender.send("analysisLoadingStep", liveOutput, "Analysis");
         resolve();
       }
@@ -129,14 +130,11 @@ const createYamlFile = async (yamlMetaObject, yamlObj, event) => {
 async function createNewYamlVersion(db, analysisID, params, event) {
   var yamlObj = new lyraYamlFile(params);
   var yamlMetaObject = createYamlMetaObject(db, analysisID);
-  event.sender.send("test", yamlMetaObject);
   return new Promise(async (resolve, reject) => {
     //create yamlfile
     return await createYamlFile(yamlMetaObject, yamlObj, event).then(
       //store analysis ID and yaml name
       yamlMeta => {
-        event.sender.send("test", yamlMeta);
-        event.sender.send("test", "yamlMetaObject");
         createDbYamlVersion(db, yamlMeta);
         resolve(yamlMeta.filePath);
       }
@@ -311,7 +309,39 @@ function createDbRelations(db, results) {
 
   db.relations.insert(allRelations);
 }
+const removeLokiInstances = (db, analysis) => {
+  var id = analysis.$loki;
+  var output = db.relations
+    .chain()
+    .find({analysisID: id})
+    .remove();
+  output = db.versions
+    .chain()
+    .find({analysisID: id})
+    .remove();
 
+  output = db.analysis
+    .chain()
+    .find({$loki: id})
+    .remove();
+};
+export function deleteAnalysis(db, analysis, event) {
+  removeLokiInstances(db, analysis);
+  return new Promise((resolve, reject) => {
+    var deleteCommand = sysCommands.esDeleteIndex.replace(
+      "{analysisName}",
+      analysis.name
+    );
+    var elasticSearch = exec(deleteCommand);
+
+    elasticSearch.stdout.on("data", data => {
+      if (data.indexOf('"acknowledged":true')) {
+        event.sender.send("success-WithMsg", Messages.successDelete);
+      }
+    });
+    resolve();
+  });
+}
 //Create a new database analysis entry
 async function getAnalysisID(db, name, description, jiraId) {
   return new Promise(resolve => {
