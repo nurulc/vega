@@ -16,6 +16,14 @@ class OpenAnalysis extends Component {
     return pathName.substring(index + 1);
   }
 
+  deleteAnalysis(analysis) {
+    ipcRenderer.send("deleteAnalysis", analysis);
+  }
+
+  goToExternalLink(name) {
+    ipcRenderer.send("goToExternalLink", name, true);
+  }
+
   formatDatabaseResults(databaseResults) {
     const formattedFiles = databaseResults["allFiles"].reduce(
       (finalObj, file) => {
@@ -41,8 +49,12 @@ class OpenAnalysis extends Component {
     }, {});
     return databaseResults;
   }
+
   componentDidMount() {
     if (isElectron()) {
+      ipcRenderer.on("test", (event, args) => {
+        console.log(args);
+      });
       //Handle correct file path
       ipcRenderer.on("allAnalysis", (event, databaseResults) => {
         const allData = this.formatDatabaseResults(databaseResults);
@@ -58,7 +70,12 @@ class OpenAnalysis extends Component {
     return (
       <div>
         {" "}
-        <EnhancedTable analysisData={this.state.analysisData} />
+        <EnhancedTable
+          goToExternalLink={this.goToExternalLink}
+          analysisData={this.state.analysisData}
+          deleteAnalysis={this.deleteAnalysis}
+          resetSelect={this.state.resetSelect}
+        />
       </div>
     );
   }

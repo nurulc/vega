@@ -1,8 +1,17 @@
 const {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
-import {checkForFileErrors, fileParsing} from "./resources/utils.js";
-import {createAnalysis, getAllAnalysis} from "./database/utils.js";
+var shell = require("electron").shell;
+import {
+  checkForFileErrors,
+  fileParsing,
+  sysCommands
+} from "./resources/utils.js";
+import {
+  createAnalysis,
+  getAllAnalysis,
+  deleteAnalysis
+} from "./database/utils.js";
 import collections from "./database/datastores.js";
 let mainWindow;
 
@@ -25,23 +34,32 @@ ipcMain.on("checkForFileErrors", async (event, allParams) => {
   });
 });
 
-ipcMain.on("getAllAnalysis", event => {
+ipcMain.on("goToExternalLink", (event, endpoint, isLocalhost) => {
+  var url = isLocalhost ? "http://localhost/" + endpoint + "/" : endpoint;
+  event.preventDefault();
+  shell.openExternal(url);
+});
+
+ipcMain.on("deleteAnalysis", async (event, analysis) => {
+  var deletedAnalysis = await deleteAnalysis(collections, analysis, event);
   var databaseResults = getAllAnalysis(collections);
   event.sender.send("allAnalysis", databaseResults);
 });
 
+ipcMain.on("error-WithMsg", (event, error) => {
+  event.sender.send("error-WithMsg", error);
+});
+ipcMain.on("sendOutWarning", (event, msg) => {
+  event.sender.send("warning-WithMsg", msg);
+});
+ipcMain.on("getAllAnalysis", event => {
+  var databaseResults = getAllAnalysis(collections);
+  event.sender.send("allAnalysis", databaseResults);
+});
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
   var finalAnalysis = await createAnalysis(collections, params, event);
-  //Uncomment to see files made
-
-  /*inalAnalysis.fileIDList.map(id => {
-    var obj = {$loki: id};
-    var file = collections.files.find(obj);
-    event.sender.send("analysisAdded", file);
-});*/
 });
-
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 900,

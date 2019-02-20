@@ -3,6 +3,7 @@ import classNames from "classnames";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
+import DeleteIcon from "@material-ui/icons/Delete";
 import Fab from "@material-ui/core/Fab";
 import NextIcon from "@material-ui/icons/NavigateNext";
 import AddIcon from "@material-ui/icons/Add";
@@ -35,7 +36,13 @@ const toolbarStyles = theme => ({
   }
 });
 
-const EnhancedTableToolbar = ({selectedAnalysis, classes}) => {
+const EnhancedTableToolbar = ({
+  deleteAnalysis,
+  goToExternalLink,
+  selectedAnalysis,
+  resetSelect,
+  classes
+}) => {
   var isSelected = selectedAnalysis && selectedAnalysis.hasOwnProperty("$loki");
   return (
     <Toolbar
@@ -57,9 +64,26 @@ const EnhancedTableToolbar = ({selectedAnalysis, classes}) => {
       <div className={classes.spacer} />
       <div className={classes.actions}>
         {isSelected ? (
-          <IconButton aria-label="Next">
-            <NextIcon />
-          </IconButton>
+          <div style={{display: "flex"}}>
+            <IconButton
+              aria-label="Next"
+              onClick={() => {
+                resetSelect();
+                deleteAnalysis(selectedAnalysis);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+            <IconButton
+              aria-label="Next"
+              onClick={() => {
+                resetSelect();
+                goToExternalLink(selectedAnalysis.name);
+              }}
+            >
+              <NextIcon />
+            </IconButton>
+          </div>
         ) : (
           <NavLink to="/CreateAnalysis">
             <Fab size="small" aria-label="Add">

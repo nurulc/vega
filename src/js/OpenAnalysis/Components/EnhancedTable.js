@@ -18,7 +18,6 @@ const styles = theme => ({
     cursor: "pointer"
   }
 });
-
 class EnhancedTable extends React.Component {
   constructor(props) {
     super(props);
@@ -26,15 +25,19 @@ class EnhancedTable extends React.Component {
       page: 0,
       rowsPerPage: 5,
       selected: {},
+      canSelect: true,
       order: "asc",
       orderBy: "name"
     };
   }
+
+  resetSelect = () => {
+    this.setState({selected: {}});
+  };
+
   handleClick = (event, id) => {
-    var newSelected;
-    if (this.isSelected(id)) {
-      newSelected = {};
-    } else {
+    var newSelected = {};
+    if (!this.isSelected(id)) {
       newSelected = this.props.analysisData.allAnalysis.filter(
         analysis => analysis.$loki === id
       )[0];
@@ -47,7 +50,13 @@ class EnhancedTable extends React.Component {
     this.state.selected["$loki"] === id;
 
   render() {
-    const {classes, analysisData} = this.props;
+    const {
+      classes,
+      analysisData,
+      goToExternalLink,
+      deleteAnalysis
+    } = this.props;
+
     const data = analysisData.hasOwnProperty("allAnalysis")
       ? analysisData.allAnalysis
       : [];
@@ -58,7 +67,10 @@ class EnhancedTable extends React.Component {
     return (
       <Paper className={classes.root}>
         <EnhancedTableToolbar
+          goToExternalLink={name => goToExternalLink(name)}
+          deleteAnalysis={analysis => deleteAnalysis(analysis)}
           selectedAnalysis={this.state.selected}
+          resetSelect={this.resetSelect}
           classes={classes}
         />
         <div style={tableWrapper}>
