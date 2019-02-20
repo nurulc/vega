@@ -1,5 +1,4 @@
 import React, {Component} from "react";
-import PropTypes from "prop-types";
 import {withStyles} from "@material-ui/core/styles";
 import Paper from "@material-ui/core/Paper";
 import Check from "@material-ui/icons/Check";
@@ -9,6 +8,8 @@ import ListItem from "@material-ui/core/ListItem";
 import Link from "@material-ui/core/Link";
 import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
+
+import CircularProgress from "@material-ui/core/CircularProgress";
 const ipcRenderer = window.ipcRenderer;
 
 const styles = theme => ({
@@ -18,6 +19,10 @@ const styles = theme => ({
     paddingBottom: theme.spacing.unit * 2
   }
 });
+const spinnerStyle = {
+  marginLeft: "45vw",
+  marginTop: "10vh"
+};
 const typeStyle = {
   display: "inline"
 };
@@ -29,15 +34,19 @@ const wrapper = {
 class GoToAnalysis extends Component {
   constructor(props) {
     super(props);
-    console.log(props);
     this.state = {
       steps: {},
       types: [],
       maxTypes: 3,
-      successLink: null
+      loadedAnalysisId: null,
+      roundProgressActive: false
     };
   }
   componentDidMount() {
+    ipcRenderer.on("isRoundProgressActive", (event, isActive) => {
+      this.setState({roundProgressActive: isActive});
+    });
+
     ipcRenderer.on("analysisLoadingStep", (event, args, type) => {
       var currSteps = this.state.steps;
 
@@ -46,25 +55,28 @@ class GoToAnalysis extends Component {
         : [args];
 
       var types =
-        this.state.types.indexOf(type) == -1
+        this.state.types.indexOf(type) === -1
           ? [...this.state.types, type]
-          : [type];
+          : [...this.state.types];
 
-      var successLink = null;
-
+      var loadedAnalysisId = null;
       if (this.state.maxTypes === types.length) {
-        console.log(currSteps);
-        successLink = currSteps["Analysis"][0].replace("-AnalysisDoneDONE", "");
-        console.log(successLink);
+        loadedAnalysisId = JSON.parse(
+          currSteps.Analysis[0].replace("-AnalysisDone", "")
+        ).analysis_id;
         this.props.nextClick({});
       }
 
       this.setState({
         steps: currSteps,
         types: types,
-        successLink: successLink
+        loadedAnalysisId: loadedAnalysisId
       });
     });
+  }
+
+  externalLinkClick(id) {
+    ipcRenderer.send("goToExternalLink", id, true);
   }
 
   render() {
@@ -88,12 +100,22 @@ class GoToAnalysis extends Component {
               </div>
             );
           })}{" "}
+          {this.state.roundProgressActive ? (
+            <CircularProgress style={spinnerStyle} color="primary" />
+          ) : (
+            ""
+          )}
         </List>
-        {this.state.successLink ? (
+        {this.state.loadedAnalysisId ? (
           <Paper className={classes.root} elevation={1}>
             {" "}
             <Typography variant="h5" component="h3" style={typeStyle}>
-              <Link href={""} className={classes.link}>
+              <Link
+                className={classes.link}
+                onClick={() =>
+                  this.externalLinkClick(this.state.loadedAnalysisId)
+                }
+              >
                 Analysis loaded here!
               </Link>
               {this.state.successLink}

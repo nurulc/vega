@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import NavigationButton from "./NavigationButton.js";
 import TextField from "@material-ui/core/TextField";
 import {withStyles} from "@material-ui/core/styles";
-
+import {Messages} from "../../Alerts/ErrorConsts.js";
 const ipcRenderer = window.ipcRenderer;
 
 const styles = theme => ({
@@ -55,12 +55,22 @@ class MetaDataInput extends Component {
       jiraId: "",
       canContinue: false,
       filePaths: this.props.filePaths,
-      isInProgress: false
+      isInProgress: false,
+      inputMinLength: 5
     };
   }
   setName(e) {
+    var inputText = e.target.value;
+    var canContinue = false;
+
+    if (inputText.indexOf(" ") === -1) {
+      canContinue = true;
+    } else {
+      ipcRenderer.send("sendOutWarning", Messages.errorNoSpacesAllowed);
+    }
     this.setState({
-      name: e.target.value
+      name: inputText,
+      canContinue: canContinue
     });
   }
   setJiraId(e) {
@@ -77,6 +87,25 @@ class MetaDataInput extends Component {
     ipcRenderer.send("createNewAnalysis", this.state);
     this.props.nextClick({...this.state.filePaths});
   };
+  checkInputLength = e => {
+    e.preventDefault();
+    if (e.target.tagName !== "INPUT") {
+      var message = "";
+      if (this.state.jiraId.length === 0) {
+        message = "Jira ID " + Messages.warningFieldIsEmpty;
+      } else if (this.state.jiraId.length <= this.state.inputMinLength) {
+        message = "Jira ID " + Messages.warningFieldNotMinLength;
+      }
+      if (this.state.name.length === 0) {
+        message = "Name " + Messages.warningFieldIsEmpty;
+      } else if (this.state.name.length <= this.state.inputMinLength) {
+        message = "Name " + Messages.warningFieldNotMinLength;
+      }
+      if (message.length > 0) {
+        ipcRenderer.send("sendOutWarning", message);
+      }
+    }
+  };
   render() {
     var {classes} = this.props;
     const backButton = (
@@ -88,7 +117,11 @@ class MetaDataInput extends Component {
     );
 
     var continueButton = "";
-    if (this.state.name.length > 4 && this.state.jiraId.length > 5) {
+    if (
+      this.state.name.length >= this.state.inputMinLength &&
+      this.state.jiraId.length >= this.state.inputMinLength &&
+      this.state.canContinue
+    ) {
       continueButton = (
         <NavigationButton
           style={nextButtonStyles}
@@ -97,12 +130,11 @@ class MetaDataInput extends Component {
       );
     }
     return (
-      <div>
+      <div onClick={this.checkInputLength}>
         <form className={classes.container}>
           <TextField
             id="name"
             label="Analysis Name"
-            inputStyle={{fontSize: "50px"}}
             className={classes.textField}
             value={this.state.name}
             onChange={this.setName}
@@ -111,7 +143,6 @@ class MetaDataInput extends Component {
           <TextField
             id="jiraId"
             label="Jira ID"
-            inputStyle={{fontSize: "50px"}}
             className={classes.textField}
             value={this.state.jiraId}
             onChange={this.setJiraId}
