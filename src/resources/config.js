@@ -1,15 +1,14 @@
 import {createMuiTheme} from "@material-ui/core/styles";
-const path = require("path");
-var os = require("os");
 var root = require("os").homedir();
 
-export const dockerCommands = {
+export const sysCommands = {
   pythonParseCommand:
     "docker run --net=lyra-graphql_default -e YAMLVAR={yaml} -v " +
     root +
     ":" +
     root +
-    " vega_loader"
+    " vega_loader",
+  esDeleteIndex: "curl -XDELETE http://localhost:9200/ce00_{analysisName}*"
 };
 
 export const theme = createMuiTheme({

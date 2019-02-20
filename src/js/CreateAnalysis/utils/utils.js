@@ -12,6 +12,7 @@ export const getExpectedFileTargetByType = type => {
     if (inputConfig[input]["extensions"].indexOf(type) !== -1) {
       fileType = inputConfig[input]["type"];
     }
+    return;
   });
   return fileType;
 };

@@ -18,13 +18,16 @@ const SelectedFileListPanel = ({filePaths, onDelete}) => {
       var typeName = inputConfig[inputObj].type;
       var displayName = inputConfig[inputObj].displayName;
       return (
-        <div style={containerStyles}>
+        <div
+          style={containerStyles}
+          key={"SelectedFileListPanelContainer-" + index}
+        >
           <Typography variant="h5" gutterBottom>
             Selected {displayName} files
           </Typography>
           <Divider variant="middle" />
           <SelectedFileList
-            key={index}
+            key={"SelectedFileList-" + index}
             choosenFiles={filePaths[typeName]}
             type={typeName}
             onDelete={(fileName, type) => onDelete(fileName, type)}
