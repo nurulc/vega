@@ -13,51 +13,22 @@ import {
 } from "../js/CreateAnalysis/utils/utils";
 import {dashboardConfig, inputConfig, sysCommands} from "../resources/config";
 import {Messages} from "../js/Alerts/ErrorConsts";
+import client from "./api/client.js";
 
 //Returns [analysisID,[fileIDs]] of a created analysis
-export const createAnalysis = async (database, params, event) => {
-  //Query the database for missing parsed files
-  var allFileIDs = createAllNewDBFiles(database, params, event);
-  var analysisID = await getAnalysisID(
-    database,
-    params.name,
-    params.description,
-    params.jiraId
-  );
-  var finalAnalysis = await createAnalysisFileRelations(
-    analysisID,
-    allFileIDs,
-    database
-  );
+export const createAnalysis = async (params, event) => {
+  var yamlFilePath = await createNewYamlVersion(params, event);
 
-  var finalExecute = await attachDockerComponenets(
-    database,
-    analysisID,
-    params,
-    event
-  );
-
+  var finalExecute = await executeYamlLoad(yamlFilePath, event);
   return finalExecute;
 };
 
-async function attachDockerComponenets(database, analysisID, params, event) {
-  var yamlFilePath = await createNewYamlVersion(
-    database,
-    analysisID,
-    params,
-    event
-  );
-  var finalExecute = await executeYamlLoad(yamlFilePath, event);
-
-  return finalExecute;
-}
-
-var lyraYamlFile = function(params) {
+var lyraYamlFile = function(params, analysisID) {
   this.project = dashboardConfig.project;
-  this.title = params.name;
-  this.sample_ids = [params.name];
-  this.library_ids = [params.name];
-  this.analysis_id = params.name;
+  this.title = analysisID;
+  this.sample_ids = [analysisID];
+  this.library_ids = [analysisID];
+  this.analysis_id = analysisID;
   this.jira_id = params.jiraId;
   this.description = params.description ? params.description : "";
   this.files = {
@@ -65,6 +36,28 @@ var lyraYamlFile = function(params) {
     tree: params.filePaths.tree[0]
   };
 };
+export const getAllAnalysisFromES = async event => {
+  const results = await client.search({
+    index: `analysis`,
+    body: {
+      size: 100
+    }
+  });
+  return formatResults(results);
+};
+
+const formatResults = data => {
+  var parsedData = data.hits.hits;
+  if (parsedData.length > 0) {
+    parsedData = parsedData.map(hit => {
+      var formattedObj = hit._source;
+      formattedObj.id = hit._id;
+      return formattedObj;
+    });
+  }
+  return parsedData;
+};
+
 const executeYamlLoad = async (yamlFilePath, event) => {
   var loadYamlCommand = sysCommands.pythonParseCommand.replace(
     "{yaml}",
@@ -82,6 +75,7 @@ const executeYamlLoad = async (yamlFilePath, event) => {
 
     load.stdout.on("data", data => {
       var liveOutput = data.toString();
+
       if (liveOutput.indexOf("-TreeDone") !== -1) {
         event.sender.send("analysisLoadingStep", liveOutput, "Tree");
       } else if (liveOutput.indexOf("-SegDone") !== -1) {
@@ -94,31 +88,38 @@ const executeYamlLoad = async (yamlFilePath, event) => {
     });
   });
 };
-const createYamlMetaObject = (db, analysisID) => {
-  var hit = db.versions.find({analysisID: analysisID});
+
+const createYamlMetaObject = async (analysisName, event) => {
+  var elasticSearchResults = await client.search({
+    index: `analysis`,
+    body: {
+      query: {
+        wildcard: {
+          analysis_id: analysisName + "*"
+        }
+      }
+    }
+  });
+
   var version =
-    hit.length > 0
-      ? Math.max.apply(
-          Math,
-          hit.map(function(o) {
-            return o.version;
-          })
-        ) + 1
-      : 1;
-  var fileName = "id_" + analysisID + "_v_" + version + ".yml";
+    elasticSearchResults.hits.hits.length === 0
+      ? ""
+      : "_v" + (Number(elasticSearchResults.hits.hits.length) + 1);
+  var fileName = analysisName + version + ".yml";
   var filePath = tempPath + fileName;
   return {
-    analysisID: analysisID,
+    analysisID: analysisName + version,
     version: version,
     fileName: fileName,
     filePath: filePath
   };
 };
+
 const createYamlFile = async (yamlMetaObject, yamlObj, event) => {
   return new Promise((resolve, reject) => {
     writeYaml(yamlMetaObject.filePath, yamlObj, function(err) {
       if (err) {
-        event.sender.send("error-WithMsg", err, 30000);
+        event.sender.send("error-WithMsg", err.toString(), 30000);
         reject(err);
       } else {
         resolve(yamlMetaObject);
@@ -126,248 +127,48 @@ const createYamlFile = async (yamlMetaObject, yamlObj, event) => {
     });
   });
 };
+async function insertYamlIntoES(yamlObj, yamlMeta, event) {
+  yamlObj.fileName = yamlMeta.fileName;
+  var id = yamlMeta.analysisID;
+  return await client.create({
+    index: "yaml",
+    type: "yaml",
+    id: id,
+    body: {
+      yamlObj
+    }
+  });
+}
 
-async function createNewYamlVersion(db, analysisID, params, event) {
-  var yamlObj = new lyraYamlFile(params);
-  var yamlMetaObject = createYamlMetaObject(db, analysisID);
+async function createNewYamlVersion(params, event) {
+  var yamlMetaObject = await createYamlMetaObject(params.name, event);
+  var yamlObj = new lyraYamlFile(params, yamlMetaObject.analysisID);
+  await insertYamlIntoES(yamlObj, yamlMetaObject, event);
+
   return new Promise(async (resolve, reject) => {
     //create yamlfile
     return await createYamlFile(yamlMetaObject, yamlObj, event).then(
-      //store analysis ID and yaml name
       yamlMeta => {
-        createDbYamlVersion(db, yamlMeta);
         resolve(yamlMeta.filePath);
       }
     );
   });
 }
 
-async function createAnalysisFileRelations(analysisID, allFileIDs, database) {
-  //Once all files and analysis entries are created, make the relation entries
-  return Promise.all([analysisID, allFileIDs]).then(function(databaseResults) {
-    var results = {};
-
-    results.analysisID = databaseResults[0];
-    results.fileIDList = databaseResults[1];
-
-    createDbRelations(database, results);
-    return results;
+export async function deleteAnalysisFromES(analysis, event) {
+  await client.indices.delete({
+    index: `ce00_${analysis.analysis_id.toLowerCase()}_*`
   });
-}
-async function createAllNewDBFiles(database, params, event) {
-  var sortedFileIDList = getParsedFilePathObj(params.filePaths, event);
-  return createFileDBEntry(database, sortedFileIDList);
-}
-async function getAllFileIds(database, params, event) {
-  var sortedFileIDList = sortFileEntries(database, params.filePaths);
-  //Return the id's from the files table for each file
-  return new Promise(async (resolve, reject) => {
-    if (sortedFileIDList.missingDbEntries.length !== 0) {
-      await getMissingFileIds(sortedFileIDList, database, event).then(
-        missingFileIds => {
-          var allFileIds = missingFileIds.concat(
-            sortedFileIDList.existingDbEntries
-          );
-          resolve(allFileIds);
+  return await client.bulk({
+    refresh: true,
+    body: [
+      {
+        delete: {
+          _index: "analysis",
+          _type: "analysis",
+          _id: analysis.id
         }
-      );
-    } else {
-      //If there are no new files that need to be parsed, return existing ids
-      resolve(sortedFileIDList.existingDbEntries);
-    }
-  });
-}
-const getMissingFileIds = (fileEntries, database, event) => {
-  return Promise.all(
-    //For every missing json file, parse and save
-    fileEntries["missingDbEntries"].map(async filePathObj => {
-      var fileExt = getFileTypeByFileName(filePathObj);
-      var fileType = getExpectedFileTargetByType(fileExt);
-
-      var needsPythonLoading = inputConfig[fileType].hasOwnProperty(
-        "pythonLoader"
-      );
-      if (needsPythonLoading) {
-        var newFileObj = await pythonParseFileContents(filePathObj, event);
-      } else {
-        var newFileObj = await parseFileContents(filePathObj, saveFile);
       }
-      return newFileObj;
-    })
-  ).then(newJsonPathList => {
-    //Return a list of new file IDs
-    var missingDbEntries = fileEntries["missingDbEntries"];
-    return createFileDBEntry(database, missingDbEntries);
+    ]
   });
-};
-
-//Create a random 5 letter/digit json file name
-export const getRandomJsonFileName = () => {
-  return (
-    Math.random()
-      .toString(36)
-      .substr(2, 5) + ".json"
-  );
-};
-
-//Save the parsed input file as a json
-const saveFile = async (results, param) => {
-  var json = JSON.stringify(results);
-  var fileName = getRandomJsonFileName();
-
-  var filePath = tempPath + fileName;
-
-  return new Promise((resolve, reject) => {
-    fs.writeFile(filePath, json, function(err) {
-      if (err) {
-        reject(err);
-      } else {
-        var newFileObj = {
-          jsonPath: fileName,
-          pathName: param.pathName
-        };
-        resolve(newFileObj);
-      }
-    });
-  });
-};
-
-function sortFileEntries(db, filePathObject) {
-  var fileIDList = [];
-  var allUserChoosenPaths = getParsedFilePathObj(filePathObject);
-  var allEntries = {};
-  //Create a list of missing and existing file entries
-  var hit = db.files.find({$or: allUserChoosenPaths});
-
-  allEntries.missingDbEntries = hit
-    ? allUserChoosenPaths.filter(
-        l1 => !hit.some(l2 => l1.pathName == l2.pathName)
-      )
-    : allUserChoosenPaths;
-
-  allEntries.existingDbEntries = hit.map(existingEntry => {
-    return existingEntry.$loki;
-  });
-
-  //return all cases
-  return allEntries;
-}
-
-//Returns a parsed object with all pathNames
-function getParsedFilePathObj(filePathObj, event) {
-  var parsedFilePathObjList = [];
-
-  Object.keys(filePathObj).map(input => {
-    filePathObj[input].map(filePath => {
-      parsedFilePathObjList = [...parsedFilePathObjList, {pathName: filePath}];
-    });
-  });
-
-  return parsedFilePathObjList;
-}
-//Create a new database analysis entry
-export function getAllAnalysis(db) {
-  var allAnalysis = db.analysis.find({$loki: {$ne: null}});
-  var allAnalysisIDs = allAnalysis.map(analysis => {
-    return {analysisID: analysis.$loki};
-  });
-
-  var allRelations = db.relations.find({$or: allAnalysisIDs});
-  var allFileIDs = allRelations
-    .map(relation => ({$loki: relation.fileID}))
-    .reduce((finalList, curr) => {
-      return finalList.findIndex(inList => inList.$loki === curr.$loki) >= 0
-        ? finalList
-        : [...finalList, curr];
-    }, []);
-
-  var allFiles = db.files.find({$or: allFileIDs});
-  return {
-    allAnalysis: allAnalysis,
-    allRelations: allRelations,
-    allFiles: allFiles
-  };
-}
-
-//Create a new db entry for a new yaml version
-function createDbYamlVersion(db, results) {
-  db.versions.insert(results);
-}
-
-//Create a relation between a file and an analysis
-function createDbRelations(db, results) {
-  //For each file, relate it back to 1 analysisID
-  var allRelations = results["fileIDList"].map(currFileID => {
-    var today = Date.now();
-
-    return {
-      analysisID: results["analysisID"],
-      fileID: currFileID,
-      date: today
-    };
-  });
-
-  db.relations.insert(allRelations);
-}
-const removeLokiInstances = (db, analysis) => {
-  var id = analysis.$loki;
-  var output = db.relations
-    .chain()
-    .find({analysisID: id})
-    .remove();
-  output = db.versions
-    .chain()
-    .find({analysisID: id})
-    .remove();
-
-  output = db.analysis
-    .chain()
-    .find({$loki: id})
-    .remove();
-};
-export function deleteAnalysis(db, analysis, event) {
-  removeLokiInstances(db, analysis);
-  return new Promise((resolve, reject) => {
-    var deleteCommand = sysCommands.esDeleteIndex.replace(
-      "{analysisName}",
-      analysis.name
-    );
-    var elasticSearch = exec(deleteCommand);
-
-    elasticSearch.stdout.on("data", data => {
-      if (data.indexOf('"acknowledged":true')) {
-        event.sender.send("success-WithMsg", Messages.successDelete);
-      }
-    });
-    resolve();
-  });
-}
-//Create a new database analysis entry
-async function getAnalysisID(db, name, description, jiraId) {
-  return new Promise(resolve => {
-    var analysisObj = {
-      name: name,
-      description: description,
-      jiraId: jiraId
-    };
-    var analysisId = db.analysis.insert(analysisObj);
-    resolve(analysisId.$loki);
-  });
-}
-
-//Create a new database file entry
-function createFileDBEntry(db, newEntries) {
-  var formattedFileEntries = newEntries.map(entry => {
-    return {
-      pathName: entry.pathName
-    };
-  });
-
-  var newDbEntries = db.files.insert(formattedFileEntries);
-
-  var newIdList = newDbEntries.hasOwnProperty("$loki")
-    ? [newDbEntries.$loki]
-    : newDbEntries.map(entry => entry.$loki);
-
-  return newIdList;
 }

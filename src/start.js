@@ -7,12 +7,13 @@ import {
   fileParsing,
   sysCommands
 } from "./resources/utils.js";
+import {Messages} from "./js/Alerts/ErrorConsts";
 import {
   createAnalysis,
   getAllAnalysis,
-  deleteAnalysis
+  deleteAnalysisFromES,
+  getAllAnalysisFromES
 } from "./database/utils.js";
-import collections from "./database/datastores.js";
 let mainWindow;
 
 //Send out an error alert
@@ -41,9 +42,11 @@ ipcMain.on("goToExternalLink", (event, endpoint, isLocalhost) => {
 });
 
 ipcMain.on("deleteAnalysis", async (event, analysis) => {
-  var deletedAnalysis = await deleteAnalysis(collections, analysis, event);
-  var databaseResults = getAllAnalysis(collections);
+  var deletionComplete = await deleteAnalysisFromES(analysis, event);
+
+  var databaseResults = await getAllAnalysisFromES(event);
   event.sender.send("allAnalysis", databaseResults);
+  event.sender.send("success-WithMsg", Messages.successDelete);
 });
 
 ipcMain.on("error-WithMsg", (event, error) => {
@@ -52,13 +55,13 @@ ipcMain.on("error-WithMsg", (event, error) => {
 ipcMain.on("sendOutWarning", (event, msg) => {
   event.sender.send("warning-WithMsg", msg);
 });
-ipcMain.on("getAllAnalysis", event => {
-  var databaseResults = getAllAnalysis(collections);
+ipcMain.on("getAllAnalysis", async event => {
+  var databaseResults = await getAllAnalysisFromES(event);
   event.sender.send("allAnalysis", databaseResults);
 });
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
-  var finalAnalysis = await createAnalysis(collections, params, event);
+  var finalAnalysis = await createAnalysis(params, event);
 });
 function createWindow() {
   mainWindow = new BrowserWindow({

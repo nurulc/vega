@@ -8,7 +8,11 @@ export const sysCommands = {
     ":" +
     root +
     " vega_loader",
-  esDeleteIndex: "curl -XDELETE http://localhost:9200/ce00_{analysisName}*"
+  esDeleteIndex: "curl -XDELETE http://localhost:9200/ce00_{analysisName}*",
+  esDeleteAnalysisMetaData:
+    "curl -XDELETE http://localhost:9200/analysis/analysis/{_id}",
+  esGetAllAnalysis: "curl -XGET http://localhost:9200/analysis/_search?pretty",
+  esRefresh: "curl -XPOST http:/localhost:9200/_refresh"
 };
 
 export const theme = createMuiTheme({
@@ -146,13 +150,6 @@ export const allAnalysisTableHeaders = [
   {
     name: "Jira ID",
     key: "jiraId",
-    numeric: false,
-    canOrderBy: false,
-    disablePadding: false
-  },
-  {
-    name: "Input Files",
-    key: "filePaths",
     numeric: false,
     canOrderBy: false,
     disablePadding: false
