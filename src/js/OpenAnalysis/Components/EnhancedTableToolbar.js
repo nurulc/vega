@@ -43,7 +43,8 @@ const EnhancedTableToolbar = ({
   resetSelect,
   classes
 }) => {
-  var isSelected = selectedAnalysis && selectedAnalysis.hasOwnProperty("$loki");
+  var isSelected =
+    selectedAnalysis && selectedAnalysis.hasOwnProperty("analysis_id");
   return (
     <Toolbar
       className={classNames(classes.root, {
@@ -53,7 +54,7 @@ const EnhancedTableToolbar = ({
       <div className={classes.title}>
         {isSelected ? (
           <Typography color="inherit" variant="h4">
-            {selectedAnalysis.name} selected
+            {selectedAnalysis.title} selected
           </Typography>
         ) : (
           <Typography variant="h6" id="tableTitle">
@@ -78,7 +79,7 @@ const EnhancedTableToolbar = ({
               aria-label="Next"
               onClick={() => {
                 resetSelect();
-                goToExternalLink(selectedAnalysis.name);
+                goToExternalLink(selectedAnalysis.analysis_id);
               }}
             >
               <NextIcon />

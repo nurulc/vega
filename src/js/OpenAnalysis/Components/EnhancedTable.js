@@ -35,19 +35,19 @@ class EnhancedTable extends React.Component {
     this.setState({selected: {}});
   };
 
-  handleClick = (event, id) => {
+  handleClick = (event, clickedAnalysis) => {
     var newSelected = {};
-    if (!this.isSelected(id)) {
-      newSelected = this.props.analysisData.allAnalysis.filter(
-        analysis => analysis.$loki === id
+    if (!this.isSelected(clickedAnalysis.analysis_id)) {
+      newSelected = this.props.analysisData.filter(
+        analysis => analysis.analysis_id === clickedAnalysis.analysis_id
       )[0];
     }
     this.setState({selected: newSelected});
   };
 
-  isSelected = id =>
-    this.state.selected.hasOwnProperty("$loki") &&
-    this.state.selected["$loki"] === id;
+  isSelected = analysis_id =>
+    this.state.selected.hasOwnProperty("analysis_id") &&
+    this.state.selected["analysis_id"] === analysis_id;
 
   render() {
     const {
@@ -57,13 +57,7 @@ class EnhancedTable extends React.Component {
       deleteAnalysis
     } = this.props;
 
-    const data = analysisData.hasOwnProperty("allAnalysis")
-      ? analysisData.allAnalysis
-      : [];
-    const relationMap = analysisData.hasOwnProperty("formatedRelations")
-      ? analysisData.formatedRelations
-      : [];
-
+    const data = analysisData.length > 0 ? analysisData : [];
     return (
       <Paper className={classes.root}>
         <EnhancedTableToolbar
@@ -82,33 +76,28 @@ class EnhancedTable extends React.Component {
               onRequestSort={this.handleRequestSort}
             />
             <TableBody>
-              {data.map(analysis => {
-                const isSelected = this.isSelected(analysis.$loki);
+              {data.map((analysis, index) => {
+                const isSelected = this.isSelected(analysis.analysis_id);
 
-                var formattedDate = new Date(analysis.meta.created);
+                var formattedDate = new Date(analysis.upload_date);
                 return (
                   <TableRow
                     hover
-                    onClick={event => this.handleClick(event, analysis.$loki)}
+                    onClick={event => this.handleClick(event, analysis)}
                     role="checkbox"
                     aria-checked={isSelected}
                     tabIndex={-1}
-                    key={analysis.name}
+                    key={analysis.title + index}
                     selected={isSelected}
                   >
                     <TableCell component="th" scope="row">
-                      {analysis.name}
+                      {analysis.title}
                     </TableCell>
                     <TableCell component="th" scope="row">
                       {analysis.description}
                     </TableCell>
                     <TableCell component="th" scope="row">
-                      {analysis.jiraId}
-                    </TableCell>
-                    <TableCell component="th" scope="row">
-                      <div style={{whiteSpace: "pre-wrap"}}>
-                        {relationMap[analysis.$loki]}
-                      </div>
+                      {analysis.jira_id}
                     </TableCell>
                     <TableCell>
                       {formattedDate.toLocaleDateString("en-US") +

@@ -1,35 +1,51 @@
 import React, {Component} from "react";
 import {withStyles} from "@material-ui/core/styles";
+import classNames from "classnames";
 import Paper from "@material-ui/core/Paper";
 import Check from "@material-ui/icons/Check";
+import OpenInNew from "@material-ui/icons/OpenInNew";
 import Typography from "@material-ui/core/Typography";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import Link from "@material-ui/core/Link";
 import ListItemText from "@material-ui/core/ListItemText";
 import Divider from "@material-ui/core/Divider";
-
 import CircularProgress from "@material-ui/core/CircularProgress";
+
+import {NavLink} from "react-router-dom";
 const ipcRenderer = window.ipcRenderer;
 
 const styles = theme => ({
   root: {
     ...theme.mixins.gutters(),
     paddingTop: theme.spacing.unit * 2,
-    paddingBottom: theme.spacing.unit * 2
-  }
+    paddingBottom: theme.spacing.unit * 2,
+    paddingRight: theme.spacing.unit * 4,
+    backgroundColor: "inherit",
+    boxShadow: "none",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center"
+  },
+  list: {marginLeft: "-10vw"},
+  link: {cursor: "-webkit-grab"}
 });
-const spinnerStyle = {
-  marginLeft: "45vw",
-  marginTop: "10vh"
-};
 const typeStyle = {
-  display: "inline"
+  display: "inline",
+  paddingTop: "4vh"
 };
 const wrapper = {
   display: "flex",
   verticalAlign: "middle",
+  justifyContent: "center",
   marginTop: "25vh"
+};
+const iconStyle = {
+  width: 60,
+  height: 60,
+  display: "block",
+  marginTop: " 10%",
+  marginLeft: "35%"
 };
 class GoToAnalysis extends Component {
   constructor(props) {
@@ -65,6 +81,7 @@ class GoToAnalysis extends Component {
           currSteps.Analysis[0].replace("-AnalysisDone", "")
         ).analysis_id;
         this.props.nextClick({});
+        this.props.nextClick({});
       }
 
       this.setState({
@@ -83,7 +100,13 @@ class GoToAnalysis extends Component {
     const {classes} = this.props;
     return (
       <div style={wrapper}>
-        <List component="nav" className={classes.root}>
+        <List
+          component="nav"
+          className={classNames(
+            classes.root,
+            this.state.types.length > 0 ? classes.list : ""
+          )}
+        >
           {this.state.types.map(type => {
             return (
               <div>
@@ -92,7 +115,7 @@ class GoToAnalysis extends Component {
                   <ListItemText>
                     {" "}
                     <Typography variant="h5" component="h3" style={typeStyle}>
-                      {type} added
+                      {type} data has been added
                     </Typography>
                   </ListItemText>
                 </ListItem>
@@ -100,30 +123,29 @@ class GoToAnalysis extends Component {
               </div>
             );
           })}{" "}
+        </List>{" "}
+        <Paper className={classes.root} elevation={1}>
           {this.state.roundProgressActive ? (
-            <CircularProgress style={spinnerStyle} color="primary" />
-          ) : (
-            ""
-          )}
-        </List>
-        {this.state.loadedAnalysisId ? (
-          <Paper className={classes.root} elevation={1}>
-            {" "}
+            <CircularProgress color="primary" />
+          ) : this.state.loadedAnalysisId ? (
             <Typography variant="h5" component="h3" style={typeStyle}>
+              Analysis loading complete.
               <Link
                 className={classes.link}
                 onClick={() =>
                   this.externalLinkClick(this.state.loadedAnalysisId)
                 }
               >
-                Analysis loaded here!
+                <NavLink to="/OpenAnalysis">
+                  <OpenInNew color="primary" style={iconStyle} />
+                </NavLink>
               </Link>
               {this.state.successLink}
             </Typography>
-          </Paper>
-        ) : (
-          ""
-        )}
+          ) : (
+            ""
+          )}{" "}
+        </Paper>
       </div>
     );
   }
