@@ -30,11 +30,11 @@ class EnhancedTable extends React.Component {
       orderBy: "name"
     };
   }
-
+  //Unselect selected analysis
   resetSelect = () => {
     this.setState({selected: {}});
   };
-
+  //If analysis is clicked
   handleClick = (event, clickedAnalysis) => {
     var newSelected = {};
     if (!this.isSelected(clickedAnalysis.analysis_id)) {
@@ -45,6 +45,7 @@ class EnhancedTable extends React.Component {
     this.setState({selected: newSelected});
   };
 
+  //Check to see if given ID is currently selected
   isSelected = analysis_id =>
     this.state.selected.hasOwnProperty("analysis_id") &&
     this.state.selected["analysis_id"] === analysis_id;

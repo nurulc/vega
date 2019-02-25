@@ -61,6 +61,7 @@ export const fileParsing = async param => {
   });
 };
 
+//Parse the first row in the csv file
 export const parseFileHeaderContents = async (param, callback) => {
   const path = param.path;
   var getLines = getLine({
@@ -83,6 +84,7 @@ export const parseFileHeaderContents = async (param, callback) => {
   });
 };
 
+//Deprecated
 export const pythonParseFileContents = async (param, event) => {
   var fileName = getRandomJsonFileName();
   var command = sysCommands.pythonParseFile
@@ -101,7 +103,7 @@ export const pythonParseFileContents = async (param, event) => {
     });
   });
 };
-
+//Deprecated
 export const parseFileContents = async (param, callback) => {
   const path = param.pathName;
 
@@ -118,10 +120,12 @@ export const parseFileContents = async (param, callback) => {
   });
 };
 
+//Check to see if file is a duplicated
 const isDuplicate = param => {
   return param.filePaths[param.args.target].indexOf(param.args.path) > -1;
 };
 
+//Check to see if a user has input the correct min # of files
 const lessThanMaxNumFile = param => {
   return !inputConfig[param.args.target].hasOwnProperty("maxFiles")
     ? true
@@ -129,6 +133,7 @@ const lessThanMaxNumFile = param => {
         param.filePaths[param.args.target].length + 1;
 };
 
+//Does the selected file have the correct extension
 const isCorrectExt = args => {
   //Does the extension match the location it was dropped
   //Does the extension match the allowed ext
@@ -138,6 +143,7 @@ const isCorrectExt = args => {
     : false;
 };
 
+//Is the file readable
 const isFileReadable = args => {
   var isFileReadable = true;
   fs.readFile(args.path, "utf-8", (err, data) => {
@@ -149,6 +155,7 @@ const isFileReadable = args => {
   return isFileReadable;
 };
 
+//Does the selected file exist
 const doesFileExist = args => {
   var doesFileExist = true;
   fs.stat(args.path, function(err, stat) {

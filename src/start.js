@@ -16,7 +16,7 @@ import {
 } from "./database/utils.js";
 let mainWindow;
 
-//Send out an error alert
+//Check if the selected files have errors
 ipcMain.on("checkForFileErrors", async (event, allParams) => {
   allParams["args"].map(async param => {
     var paramCheckObj = Object.assign({}, allParams);
@@ -35,12 +35,14 @@ ipcMain.on("checkForFileErrors", async (event, allParams) => {
   });
 });
 
+//On a click of an exteranl link
 ipcMain.on("goToExternalLink", (event, endpoint, isLocalhost) => {
-  var url = isLocalhost ? "http://localhost/" + endpoint + "/" : endpoint;
+  var url = isLocalhost ? "http://localhost/" + endpoint : endpoint;
   event.preventDefault();
   shell.openExternal(url);
 });
 
+//Attempt to delete an analysis
 ipcMain.on("deleteAnalysis", async (event, analysis) => {
   var deletionComplete = await deleteAnalysisFromES(analysis, event);
 
@@ -49,12 +51,15 @@ ipcMain.on("deleteAnalysis", async (event, analysis) => {
   event.sender.send("success-WithMsg", Messages.successDelete);
 });
 
+//Send out an error
 ipcMain.on("error-WithMsg", (event, error) => {
   event.sender.send("error-WithMsg", error);
 });
+//Send out a warning
 ipcMain.on("sendOutWarning", (event, msg) => {
   event.sender.send("warning-WithMsg", msg);
 });
+//Retrieve all analysis
 ipcMain.on("getAllAnalysis", async event => {
   var databaseResults = await getAllAnalysisFromES(event);
   event.sender.send("allAnalysis", databaseResults);
@@ -63,6 +68,7 @@ ipcMain.on("getAllAnalysis", async event => {
 ipcMain.on("createNewAnalysis", async (event, params) => {
   var finalAnalysis = await createAnalysis(params, event);
 });
+//Initialize the main window
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 900,
@@ -83,7 +89,7 @@ function createWindow() {
   );
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
     mainWindow = null;

@@ -15,7 +15,7 @@ import {dashboardConfig, inputConfig, sysCommands} from "../resources/config";
 import {Messages} from "../js/Alerts/ErrorConsts";
 import client from "./api/client.js";
 
-//Returns [analysisID,[fileIDs]] of a created analysis
+//Create a yaml file to load into ES
 export const createAnalysis = async (params, event) => {
   var yamlFilePath = await createNewYamlVersion(params, event);
 
@@ -23,6 +23,7 @@ export const createAnalysis = async (params, event) => {
   return finalExecute;
 };
 
+//Yaml file layout
 var lyraYamlFile = function(params, analysisID) {
   this.project = dashboardConfig.project;
   this.title = analysisID;
@@ -36,6 +37,8 @@ var lyraYamlFile = function(params, analysisID) {
     tree: params.filePaths.tree[0]
   };
 };
+
+//Retireve all created anaylsis
 export const getAllAnalysisFromES = async event => {
   const results = await client.search({
     index: `analysis`,
@@ -46,6 +49,7 @@ export const getAllAnalysisFromES = async event => {
   return formatResults(results);
 };
 
+//Format all analysis to be viewed
 const formatResults = data => {
   var parsedData = data.hits.hits;
   if (parsedData.length > 0) {
@@ -58,6 +62,7 @@ const formatResults = data => {
   return parsedData;
 };
 
+//Execute yaml commands and wait for responses
 const executeYamlLoad = async (yamlFilePath, event) => {
   var loadYamlCommand = sysCommands.pythonParseCommand.replace(
     "{yaml}",
@@ -89,6 +94,7 @@ const executeYamlLoad = async (yamlFilePath, event) => {
   });
 };
 
+//Create meta dat afor a new analysis including versions
 const createYamlMetaObject = async (analysisName, event) => {
   var elasticSearchResults = await client.search({
     index: `analysis`,
@@ -106,6 +112,7 @@ const createYamlMetaObject = async (analysisName, event) => {
       ? ""
       : "_v" + (Number(elasticSearchResults.hits.hits.length) + 1);
   var fileName = analysisName + version + ".yml";
+
   var filePath = tempPath + fileName;
   return {
     analysisID: analysisName + version,
@@ -115,6 +122,7 @@ const createYamlMetaObject = async (analysisName, event) => {
   };
 };
 
+//Write into a ymal file
 const createYamlFile = async (yamlMetaObject, yamlObj, event) => {
   return new Promise((resolve, reject) => {
     writeYaml(yamlMetaObject.filePath, yamlObj, function(err) {
@@ -127,9 +135,12 @@ const createYamlFile = async (yamlMetaObject, yamlObj, event) => {
     });
   });
 };
+
+//Insert yaml for history purposes
 async function insertYamlIntoES(yamlObj, yamlMeta, event) {
   yamlObj.fileName = yamlMeta.fileName;
   var id = yamlMeta.analysisID;
+
   return await client.create({
     index: "yaml",
     type: "yaml",
@@ -140,11 +151,12 @@ async function insertYamlIntoES(yamlObj, yamlMeta, event) {
   });
 }
 
+//Create a new version of current analysis
 async function createNewYamlVersion(params, event) {
   var yamlMetaObject = await createYamlMetaObject(params.name, event);
   var yamlObj = new lyraYamlFile(params, yamlMetaObject.analysisID);
   await insertYamlIntoES(yamlObj, yamlMetaObject, event);
-
+  event.sender.send("test", yamlMetaObject);
   return new Promise(async (resolve, reject) => {
     //create yamlfile
     return await createYamlFile(yamlMetaObject, yamlObj, event).then(
@@ -155,6 +167,7 @@ async function createNewYamlVersion(params, event) {
   });
 }
 
+//Delete an analysis instance from ES
 export async function deleteAnalysisFromES(analysis, event) {
   await client.indices.delete({
     index: `ce00_${analysis.analysis_id.toLowerCase()}_*`
