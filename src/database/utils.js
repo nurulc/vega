@@ -2,11 +2,16 @@ import {
   parseFileContents,
   pythonParseFileContents
 } from "../resources/utils.js";
-const fs = require("fs");
 const appRoot = require("app-root-path");
 var writeYaml = require("write-yaml");
 const exec = require("child_process").exec;
-const tempPath = appRoot + "/src/database/temp/";
+var path = require("path");
+const fs = require("fs");
+const _HOME_ = require("os").homedir();
+const _SEP_ = require("path").sep;
+const tempPath = `${_HOME_}${_SEP_}.vega${_SEP_}`;
+const fixPath = require("fix-path");
+
 import {
   getFileTypeByFileName,
   getExpectedFileTargetByType
@@ -70,6 +75,9 @@ const executeYamlLoad = async (yamlFilePath, event) => {
   );
 
   return new Promise((resolve, reject) => {
+    //Needed to execute scripts in production
+    fixPath();
+
     event.sender.send("isRoundProgressActive", true);
     var load = exec(loadYamlCommand);
 
@@ -112,8 +120,8 @@ const createYamlMetaObject = async (analysisName, event) => {
       ? ""
       : "_v" + (Number(elasticSearchResults.hits.hits.length) + 1);
   var fileName = analysisName + version + ".yml";
-
   var filePath = tempPath + fileName;
+  event.sender.send("test", filePath);
   return {
     analysisID: analysisName + version,
     version: version,
@@ -127,6 +135,7 @@ const createYamlFile = async (yamlMetaObject, yamlObj, event) => {
   return new Promise((resolve, reject) => {
     writeYaml(yamlMetaObject.filePath, yamlObj, function(err) {
       if (err) {
+        event.sender.send("test", err.toString());
         event.sender.send("error-WithMsg", err.toString(), 30000);
         reject(err);
       } else {

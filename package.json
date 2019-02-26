@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@babel/polyfill": "^7.2.5",
     "@material-ui/core": "^3.9.0",
     "@material-ui/icons": "^3.0.2",
     "@material/typography": "^0.43.0",
@@ -14,16 +15,17 @@
     "csvtojson": "^2.0.8",
     "d3": "^5.7.0",
     "elasticsearch": "^15.4.1",
-    "electron": "^3.0.10",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
     "eslint-plugin-jsx-a11y": "^6.1.2",
     "eslint-plugin-react": "^7.11.1",
     "event-stream": "^4.0.1",
     "fast-csv": "^2.4.1",
+    "fix-path": "^2.1.0",
     "foreman": "^3.0.1",
     "fs": "0.0.1-security",
     "get-line": "^0.1.2",
+    "import": "^0.0.6",
     "is-electron": "^2.1.0",
     "lokijs": "^1.5.6",
     "nedb": "^1.8.0",
@@ -41,37 +43,67 @@
     "react-sortable-hoc": "^0.8.4",
     "react-transition-group": "^2.3.0",
     "reactstrap": "^6.5.0",
+    "source-map-support": "^0.5.10",
     "strap": "^0.1.0",
     "write-yaml": "^1.0.0",
     "xmlhttprequest": "^1.8.0"
   },
+  "resolutions": {
+    "babel-core": "7.0.0-bridge.0"
+  },
   "devDependencies": {
+    "@babel/cli": "^7.2.3",
+    "@babel/core": "^7.3.4",
+    "@babel/node": "^7.0.0",
+    "@babel/plugin-proposal-class-properties": "^7.3.4",
+    "@babel/plugin-transform-runtime": "^7.3.4",
+    "@babel/preset-env": "^7.3.4",
+    "@babel/preset-react": "^7.0.0",
+    "@babel/runtime": "^7.3.4",
+    "babel-core": "^7.0.0-bridge.0",
+    "electron": "^4.0.5",
     "electron-builder": "^20.38.1",
+    "electron-packager": "^13.1.0",
     "electron-prebuilt-compile": "^3.0.10"
   },
   "build": {
-    "appId": "com.electron.electron-with-create-react-app",
-    "win": {
-      "iconUrl": "https://cdn2.iconfinder.com/data/icons/designer-skills/128/react-256.png"
+    "appId": "com.electron.vega",
+    "mac": {
+      "category": "public.app-category.education"
     },
+    "extends": null,
+    "files": [
+      "build/**/*",
+      "node_modules/**/*",
+      "package.json",
+      {
+        "from": "./build/database/temp/*",
+        "to": "./temp/"
+      }
+    ],
+    "buildDependenciesFromSource": true,
     "directories": {
-      "buildResources": "public"
+      "buildResources": "build"
+    },
+    "extraResources": {
+      "from": "/build/database/temp/*",
+      "to": "/temp/*"
     }
   },
   "homepage": "./",
-  "main": "src/start.js",
+  "main": "build/start.js",
   "scripts": {
     "start": "nf start -p 3300",
-    "build": "react-scripts build",
+    "build": "babel src --out-dir build",
     "test": "react-scripts test --env=jsdom",
     "eject": "react-scripts eject",
     "electron": "electron . ",
-    "electron-start": "node src/start-react",
+    "electron-start": "npx babel-node src/start-react",
     "react-start": "react-scripts start",
     "pack": "build --dir",
-    "dist": "npm run build && build",
-    "postinstall": "install-app-deps",
-    "docs": "npm start --prefix ./docusaurus/website"
+    "dist": "yarn run build && build",
+    "postinstall": "electron-builder install-app-deps",
+    "docs": "yarn start --prefix ./docusaurus/website"
   },
   "eslintConfig": {
     "extends": "react-app"

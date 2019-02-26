@@ -102,7 +102,9 @@ class AddInput extends Component {
       ipcRenderer.on("confirmed-correctFilePath", (event, args) => {
         this.setFileList(args.path, args.target);
       });
-
+      ipcRenderer.on("test", (event, args) => {
+        console.log(args);
+      });
       //Handle drag and drop on containers
       var dragFilesHolder = document.querySelectorAll(".dragWells");
 

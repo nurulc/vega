@@ -1,3 +1,9 @@
+import "@babel/polyfill";
+const _HOME_ = require("os").homedir();
+const _SEP_ = require("path").sep;
+const _APPHOME_ = `${_HOME_}${_SEP_}.vega${_SEP_}`;
+const fs = require("fs");
+
 const {app, BrowserWindow, ipcMain} = require("electron");
 const path = require("path");
 const url = require("url");
@@ -61,6 +67,7 @@ ipcMain.on("sendOutWarning", (event, msg) => {
 });
 //Retrieve all analysis
 ipcMain.on("getAllAnalysis", async event => {
+  event.sender.send("test", _APPHOME_);
   var databaseResults = await getAllAnalysisFromES(event);
   event.sender.send("allAnalysis", databaseResults);
 });
@@ -70,6 +77,13 @@ ipcMain.on("createNewAnalysis", async (event, params) => {
 });
 //Initialize the main window
 function createWindow() {
+  //Create the home dir if it doesn't exist
+  if (!fs.existsSync(_APPHOME_)) {
+    fs.mkdir(_APPHOME_, "0777", function() {
+      return;
+    });
+  }
+
   mainWindow = new BrowserWindow({
     width: 900,
     height: 900,
