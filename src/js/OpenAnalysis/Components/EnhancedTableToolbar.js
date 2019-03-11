@@ -37,6 +37,7 @@ const toolbarStyles = theme => ({
 });
 
 const EnhancedTableToolbar = ({
+  defaultBannerText,
   deleteAnalysis,
   goToExternalLink,
   selectedAnalysis,
@@ -58,7 +59,7 @@ const EnhancedTableToolbar = ({
           </Typography>
         ) : (
           <Typography variant="h6" id="tableTitle">
-            All Analysis
+            {defaultBannerText}
           </Typography>
         )}
       </div>

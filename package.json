@@ -6,6 +6,7 @@
     "@babel/polyfill": "^7.2.5",
     "@material-ui/core": "^3.9.0",
     "@material-ui/icons": "^3.0.2",
+    "@material-ui/styles": "^3.0.0-alpha.10",
     "@material/typography": "^0.43.0",
     "app": "^0.1.0",
     "app-root-path": "^2.1.0",
@@ -14,6 +15,7 @@
     "classnames": "^2.2.6",
     "csvtojson": "^2.0.8",
     "d3": "^5.7.0",
+    "d3-interpolate": "^1.3.2",
     "elasticsearch": "^15.4.1",
     "eslint-config-airbnb": "^17.1.0",
     "eslint-plugin-import": "^2.14.0",
@@ -28,6 +30,7 @@
     "import": "^0.0.6",
     "is-electron": "^2.1.0",
     "lokijs": "^1.5.6",
+    "material-ui": "^1.0.0-beta.47",
     "nedb": "^1.8.0",
     "nedb-promise": "^2.0.1",
     "node-fs": "^0.1.7",
@@ -36,6 +39,7 @@
     "react-alert": "^4.0.4",
     "react-alert-template-basic": "^1.0.0",
     "react-bootstrap": "^0.32.4",
+    "react-delay": "^0.1.0",
     "react-dom": "^16.5.2",
     "react-router-dom": "^4.3.1",
     "react-s-alert": "^1.4.1",
@@ -64,7 +68,8 @@
     "electron": "^4.0.5",
     "electron-builder": "^20.38.1",
     "electron-packager": "^13.1.0",
-    "electron-prebuilt-compile": "^3.0.10"
+    "electron-prebuilt-compile": "^3.0.10",
+    "react-test-renderer": "^16.8.3"
   },
   "build": {
     "appId": "com.electron.vega",

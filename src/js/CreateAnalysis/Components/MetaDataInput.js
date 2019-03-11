@@ -2,7 +2,7 @@ import React, {Component} from "react";
 import NavigationButton from "./NavigationButton.js";
 import TextField from "@material-ui/core/TextField";
 import {withStyles} from "@material-ui/core/styles";
-import {Messages} from "../../Alerts/ErrorConsts.js";
+import {Messages} from "../../Alerts/Messages.js";
 const ipcRenderer = window.ipcRenderer;
 
 const styles = theme => ({
@@ -51,7 +51,7 @@ class MetaDataInput extends Component {
 
     this.state = {
       name: "",
-      descripton: "",
+      description: "",
       jiraId: "",
       canContinue: false,
       filePaths: this.props.filePaths,

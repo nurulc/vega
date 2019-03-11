@@ -9,12 +9,14 @@ const path = require("path");
 const url = require("url");
 var shell = require("electron").shell;
 import {
+  multipleFileSelectionCheck,
   checkForFileErrors,
   fileParsing,
   sysCommands
 } from "./resources/utils.js";
-import {Messages} from "./js/Alerts/ErrorConsts";
+import {Messages} from "./js/Alerts/Messages";
 import {
+  loadBackend,
   createAnalysis,
   getAllAnalysis,
   deleteAnalysisFromES,
@@ -24,7 +26,17 @@ let mainWindow;
 
 //Check if the selected files have errors
 ipcMain.on("checkForFileErrors", async (event, allParams) => {
-  allParams["args"].map(async param => {
+  var selectedFiles = allParams["args"];
+
+  var typeError = multipleFileSelectionCheck(selectedFiles, event);
+  if (typeError.message) {
+    //Send out an error message
+    event.sender.send("error-WithMsg", typeError.message);
+    //Set the new list without the errored target type
+    selectedFiles = typeError.newSelectionList;
+  }
+
+  selectedFiles.map(async param => {
     var paramCheckObj = Object.assign({}, allParams);
     paramCheckObj["args"] = Object.assign({}, param);
 
@@ -67,13 +79,18 @@ ipcMain.on("sendOutWarning", (event, msg) => {
 });
 //Retrieve all analysis
 ipcMain.on("getAllAnalysis", async event => {
-  event.sender.send("test", _APPHOME_);
   var databaseResults = await getAllAnalysisFromES(event);
+  event.sender.send("test", databaseResults);
   event.sender.send("allAnalysis", databaseResults);
 });
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
   var finalAnalysis = await createAnalysis(params, event);
+});
+
+ipcMain.on("loadBackend", async (event, params) => {
+  var complete = await loadBackend(event, params);
+  event.sender.send("completeBackendLoad", complete);
 });
 //Initialize the main window
 function createWindow() {
@@ -103,7 +120,7 @@ function createWindow() {
   );
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
     mainWindow = null;

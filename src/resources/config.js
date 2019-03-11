@@ -3,11 +3,11 @@ var root = require("os").homedir();
 
 export const sysCommands = {
   pythonParseCommand:
-    "docker run --net=lyra-graphql_default -e YAMLVAR={yaml} -v " +
+    "docker run --net=vega_default -e YAMLVAR={yaml} -v " +
     root +
     ":" +
     root +
-    " vega_loader",
+    " shahcompbio/vega_loader",
   esDeleteIndex: "curl -XDELETE http://localhost:9200/ce00_{analysisName}*",
   esDeleteAnalysisMetaData:
     "curl -XDELETE http://localhost:9200/analysis/analysis/{_id}",
@@ -47,6 +47,7 @@ export const theme = createMuiTheme({
         padding: "15px"
       }
     },
+    MuiExpansionPanel: {root: {backgroundColor: "#fdfdfd !important"}},
     MuiButton: {
       root: {
         fontColor: "#60606f",

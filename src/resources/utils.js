@@ -1,7 +1,7 @@
 var fs = require("fs");
 const path = require("path");
 const url = require("url");
-import {Messages} from "../js/Alerts/ErrorConsts";
+import {Messages} from "../js/Alerts/Messages";
 import {getRandomJsonFileName} from "../database/utils";
 import {inputConfig, sysCommands} from "./config";
 const exec = require("child_process").exec;
@@ -9,6 +9,39 @@ const csv = require("fast-csv");
 const getLine = require("get-line");
 const es = require("event-stream");
 
+export const multipleFileSelectionCheck = (args, event) => {
+  var infoPack = {};
+
+  var typeFrequency = args
+    .map(pathObject => pathObject.target)
+    .reduce((types, type) => {
+      types[type] = (types[type] || 0) + 1;
+      return types;
+    }, {});
+
+  var removeTypes = Object.keys(typeFrequency).reduce(
+    (finalTargets, targetType) => {
+      if (
+        inputConfig[targetType].hasOwnProperty("maxFiles") &&
+        inputConfig[targetType].maxFiles < typeFrequency[targetType]
+      ) {
+        infoPack.message = Messages.errorMaxNumFilesReachedWithPlaceholder.replace(
+          "{inputs}",
+          targetType
+        );
+        finalTargets[targetType] = "";
+      }
+      return finalTargets;
+    },
+    {}
+  );
+
+  infoPack.newSelectionList = args.filter(pathObject => {
+    return !removeTypes.hasOwnProperty(pathObject.target);
+  });
+
+  return infoPack;
+};
 export const checkForFileErrors = params => {
   var args = params.args;
   var errorMsg = null;
