@@ -10,6 +10,7 @@
 /build
 /dist
 /release-builds
+/package
 
 # misc
 .DS_Store
