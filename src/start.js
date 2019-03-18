@@ -2,55 +2,43 @@ import "@babel/polyfill";
 const _HOME_ = require("os").homedir();
 const _SEP_ = require("path").sep;
 const _APPHOME_ = `${_HOME_}${_SEP_}.vega${_SEP_}`;
-const fs = require("fs");
 
-const {app, BrowserWindow, ipcMain} = require("electron");
+const {app, BrowserWindow, ipcMain, Menu, Tray} = require("electron");
+
+const fs = require("fs");
 const path = require("path");
 const url = require("url");
 var shell = require("electron").shell;
+
 import {
   multipleFileSelectionCheck,
   checkForFileErrors,
   fileParsing,
+  checkIndividualFiles,
   sysCommands
 } from "./resources/utils.js";
-import {Messages} from "./js/Alerts/Messages";
 import {
   loadBackend,
   createAnalysis,
   getAllAnalysis,
   deleteAnalysisFromES,
-  getAllAnalysisFromES
+  getAllAnalysisFromES,
+  createDockerComposeYaml
 } from "./database/utils.js";
+import {Messages} from "./js/Alerts/Messages";
 let mainWindow;
+
+const log = require("electron-log");
 
 //Check if the selected files have errors
 ipcMain.on("checkForFileErrors", async (event, allParams) => {
+  log.info("validating files -" + JSON.stringify(allParams));
+
   var selectedFiles = allParams["args"];
 
-  var typeError = multipleFileSelectionCheck(selectedFiles, event);
-  if (typeError.message) {
-    //Send out an error message
-    event.sender.send("error-WithMsg", typeError.message);
-    //Set the new list without the errored target type
-    selectedFiles = typeError.newSelectionList;
-  }
+  selectedFiles = multipleFileSelectionCheck(selectedFiles, event);
 
-  selectedFiles.map(async param => {
-    var paramCheckObj = Object.assign({}, allParams);
-    paramCheckObj["args"] = Object.assign({}, param);
-
-    var errors = checkForFileErrors(paramCheckObj);
-    if (errors) {
-      event.sender.send("error-WithMsg", errors);
-    } else {
-      await fileParsing(param).then(eventPromise => {
-        Object.keys(eventPromise).map(eventType => {
-          event.sender.send(eventType, eventPromise[eventType]);
-        });
-      });
-    }
-  });
+  checkIndividualFiles(selectedFiles, allParams, event);
 });
 
 //On a click of an exteranl link
@@ -62,36 +50,46 @@ ipcMain.on("goToExternalLink", (event, endpoint, isLocalhost) => {
 
 //Attempt to delete an analysis
 ipcMain.on("deleteAnalysis", async (event, analysis) => {
-  var deletionComplete = await deleteAnalysisFromES(analysis, event);
-
+  log.info("deleting analyis -" + JSON.stringify(analysis));
+  await deleteAnalysisFromES(analysis, event);
+  log.info("Analysis deleted ");
   var databaseResults = await getAllAnalysisFromES(event);
+  log.info("Fetching all analysis");
+  log.info("all analysis" + JSON.stringify(databaseResults));
   event.sender.send("allAnalysis", databaseResults);
   event.sender.send("success-WithMsg", Messages.successDelete);
 });
 
 //Send out an error
 ipcMain.on("error-WithMsg", (event, error) => {
+  log.error("error -" + error);
   event.sender.send("error-WithMsg", error);
 });
 //Send out a warning
 ipcMain.on("sendOutWarning", (event, msg) => {
+  log.warn("warning -" + msg);
   event.sender.send("warning-WithMsg", msg);
 });
 //Retrieve all analysis
 ipcMain.on("getAllAnalysis", async event => {
+  log.info("fetching all analyis");
   var databaseResults = await getAllAnalysisFromES(event);
-  event.sender.send("test", databaseResults);
   event.sender.send("allAnalysis", databaseResults);
 });
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
+  log.info("creating backend");
   var finalAnalysis = await createAnalysis(params, event);
 });
 
 ipcMain.on("loadBackend", async (event, params) => {
-  var complete = await loadBackend(event, params);
+  createDockerComposeYaml(_APPHOME_, event);
+  log.info("loading backend");
+  var complete = await loadBackend(event, params, _APPHOME_);
+  log.info("backend loaded");
   event.sender.send("completeBackendLoad", complete);
 });
+
 //Initialize the main window
 function createWindow() {
   //Create the home dir if it doesn't exist
@@ -100,10 +98,12 @@ function createWindow() {
       return;
     });
   }
-
+  var appIcon = new Tray(path.join(__dirname, "/../build/icon.png"));
+  log.info("backend loaded");
   mainWindow = new BrowserWindow({
     width: 900,
     height: 900,
+    icon: path.join(__dirname, "/../build/icon.png"),
     webPreferences: {
       nodeIntegration: false,
       preload: __dirname + "/resources/preload.js"
@@ -120,7 +120,7 @@ function createWindow() {
   );
 
   // Open the DevTools.
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
     mainWindow = null;
