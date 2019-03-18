@@ -36,6 +36,7 @@ class Alerts extends Component {
     }
   }
   componentWillUnmount() {
+    this.setState({message: ""});
     clearTimeout(this.timer);
   }
 
@@ -52,6 +53,7 @@ class Alerts extends Component {
 
   onClose = () => {
     this.setState({
+      message: "",
       open: false
     });
   };

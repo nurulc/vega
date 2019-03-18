@@ -9,10 +9,10 @@ export const Messages = {
   errorWrongColumns: "This file does not contain the correct columns.",
   errorMissingRequiredHeader:
     "That selected file is missing the following columns: ",
-
-  warningNoSpacesAllowed: "Please remove spaces from the analysis name!",
-  warningFieldNotMinLength: " field should be no less than 5 characters",
-  warningFieldIsEmpty: " field cannot be empty",
-
+  warningFieldNotMinLength: "{field} should be no less than 5 characters",
+  warningFieldIsEmpty: "{field} cannot be empty",
+  warningFieldHasSpaces: "{field} field cannot contain spaces",
+  warningFieldHasSpecialCharacters:
+    "{field} field cannot contain special characters",
   successDelete: "Analysis was successfully deleted"
 };

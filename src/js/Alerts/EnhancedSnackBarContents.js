@@ -2,8 +2,6 @@ import SnackbarContent from "@material-ui/core/SnackbarContent";
 import {withStyles} from "@material-ui/core/styles";
 import React from "react";
 import classNames from "classnames";
-import green from "@material-ui/core/colors/green";
-import amber from "@material-ui/core/colors/amber";
 import ErrorIcon from "@material-ui/icons/Error";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import WarningIcon from "@material-ui/icons/Warning";
@@ -13,14 +11,18 @@ import IconButton from "@material-ui/core/IconButton";
 
 const styles = theme => ({
   error: {
-    backgroundColor: theme.palette.error.dark,
+    backgroundColor: "#ef9a9a",
+    opacity: 0.8,
+    color: "#000000",
     height: 50
   },
   warning: {
-    backgroundColor: amber[700]
+    backgroundColor: "#fffde7",
+    color: "#000000"
   },
   success: {
-    backgroundColor: green[600]
+    backgroundColor: "#c8e6c9",
+    color: "#000000"
   },
   info: {
     backgroundColor: theme.palette.primary.dark
