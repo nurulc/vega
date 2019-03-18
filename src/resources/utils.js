@@ -9,9 +9,31 @@ const csv = require("fast-csv");
 const getLine = require("get-line");
 const es = require("event-stream");
 
-export const multipleFileSelectionCheck = (args, event) => {
-  var infoPack = {};
+//For each file check if it has the correct parameters
+export const checkIndividualFiles = (selectedFiles, allParams, event) => {
+  selectedFiles.map(async param => {
+    var paramCheckObj = Object.assign({}, allParams);
+    paramCheckObj["args"] = Object.assign({}, param);
 
+    var errors = checkForFileErrors(paramCheckObj);
+    if (errors) {
+      event.sender.send("error-WithMsg", errors);
+    } else {
+      await fileParsing(param).then(eventPromise => {
+        Object.keys(eventPromise).map(eventType => {
+          event.sender.send(eventType, eventPromise[eventType]);
+        });
+      });
+    }
+  });
+};
+
+//Checks to see if the number of files selected is less than the max # allowed
+export const multipleFileSelectionCheck = (args, event) => {
+  var message,
+    selectedFiles = null;
+
+  //How many files per extension choosen
   var typeFrequency = args
     .map(pathObject => pathObject.target)
     .reduce((types, type) => {
@@ -19,13 +41,14 @@ export const multipleFileSelectionCheck = (args, event) => {
       return types;
     }, {});
 
+  //Types needed for removal
   var removeTypes = Object.keys(typeFrequency).reduce(
     (finalTargets, targetType) => {
       if (
         inputConfig[targetType].hasOwnProperty("maxFiles") &&
         inputConfig[targetType].maxFiles < typeFrequency[targetType]
       ) {
-        infoPack.message = Messages.errorMaxNumFilesReachedWithPlaceholder.replace(
+        message = Messages.errorMaxNumFilesReachedWithPlaceholder.replace(
           "{inputs}",
           targetType
         );
@@ -35,12 +58,19 @@ export const multipleFileSelectionCheck = (args, event) => {
     },
     {}
   );
+  //If there is an error, remove those types and return the rest
+  if (message) {
+    //Send out an error message
+    event.sender.send("error-WithMsg", message);
+    //Set the new list without the errored target type
+    selectedFiles = args.filter(pathObject => {
+      return !removeTypes.hasOwnProperty(pathObject.target);
+    });
+  } else {
+    selectedFiles = args;
+  }
 
-  infoPack.newSelectionList = args.filter(pathObject => {
-    return !removeTypes.hasOwnProperty(pathObject.target);
-  });
-
-  return infoPack;
+  return selectedFiles;
 };
 export const checkForFileErrors = params => {
   var args = params.args;
@@ -134,22 +164,6 @@ export const pythonParseFileContents = async (param, event) => {
         resolve(newFileObj);
       }
     });
-  });
-};
-//Deprecated
-export const parseFileContents = async (param, callback) => {
-  const path = param.pathName;
-
-  var finalJson = [];
-  return new Promise(async function(resolve, reject) {
-    csv
-      .fromPath(path, {headers: true})
-      .on("data", function(data) {
-        finalJson = [...finalJson, data];
-      })
-      .on("end", async function() {
-        resolve(callback(finalJson, param));
-      });
   });
 };
 
