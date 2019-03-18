@@ -7,6 +7,7 @@ import Paper from "@material-ui/core/Paper";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import EnhancedTableHead from "./EnhancedTableHeader";
 import {withStyles} from "@material-ui/core/styles";
+var moment = require("moment-timezone");
 const tableWrapper = {
   overflowX: "auto"
 };
@@ -50,6 +51,12 @@ class EnhancedTable extends React.Component {
     this.state.selected.hasOwnProperty("analysis_id") &&
     this.state.selected["analysis_id"] === analysis_id;
 
+  //Converts the UTC stored time to the current timezone
+  getDateFromUTC = date =>
+    moment(date)
+      .local()
+      .format("HH:mm:ss YYYY/MM/DD");
+
   render() {
     const {
       classes,
@@ -59,7 +66,7 @@ class EnhancedTable extends React.Component {
     } = this.props;
 
     const data = analysisData.length > 0 ? analysisData : [];
-    console.log(data);
+
     return (
       <Paper className={classes.root}>
         <EnhancedTableToolbar
@@ -86,8 +93,7 @@ class EnhancedTable extends React.Component {
               <TableBody>
                 {data.map((analysis, index) => {
                   const isSelected = this.isSelected(analysis.analysis_id);
-
-                  var formattedDate = new Date(analysis.upload_date);
+                  var date = moment.utc(analysis.upload_date);
                   return (
                     <TableRow
                       hover
@@ -107,11 +113,7 @@ class EnhancedTable extends React.Component {
                       <TableCell component="th" scope="row">
                         {analysis.jira_id}
                       </TableCell>
-                      <TableCell>
-                        {formattedDate.toLocaleDateString("en-US") +
-                          " " +
-                          formattedDate.toLocaleTimeString()}
-                      </TableCell>
+                      <TableCell>{this.getDateFromUTC(date)}</TableCell>
                     </TableRow>
                   );
                 })}
