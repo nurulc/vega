@@ -15,14 +15,20 @@ The front-end is written using [React](https://reactjs.org/) and uses an [Elasti
 
 ## Installation Instructions for MAC
 
-After installing docker, follow the instructions on the screen to create a new user. You should see icon of a whale on your top right menu. Before starting Vega, make sure you click the whale icon and confirm that docker is running and that you are logged in.
-Next, double click the on the Vega executable. Drag and drop Vega into the applications folder. Vega should now be installed on your Mac.
+1. Install docker https://docs.docker.com/docker-for-mac/install/
+2. Follow the login instruction on the screen to create a docker user
+3. Click on the whale, on the top right menu of your screen to confirm your docker is running and you are logged in.
+4. Double click the on the Vega executable
+5. Drag and drop Vega into the applications folder.
+6. Go to your installed apps, and find Vega
 
 ### Setting up Lyra backend
 
-Every time you start Vega, make sure your docker is running. Start Vega and wait for the all of the components to load. The first time you do this it will take a long time. (5-8 minutes depending on your internet connection) All subsequent times, startup will be faster.
+1. Every time you start Vega, make sure your docker is running and you are logged in by checking the docker icon on your menu tray.
+2. Start Vega and wait for the all of the components to load. The first time you do this it will take a long time. (5-8 minutes depending on your internet connection) All subsequent times, startup will be faster.
 
 ### Loading Data
 
-Drag and drop or select files through the interface. Currently Vega only supports csv, gml and newick files.
-Add an name and a jira ID for the current analysis and then click next. The data should take a minute or two to load and will bring you to your new local instance of Lyra.
+1. Drag and drop or select files through the interface. Currently Vega only supports csv, gml and newick files.
+2. Add an name and a jira ID for the current analysis and then click next. The data should take a minute or two to load
+3. Vega will bring you to your new dashboard when it is done loading. 
