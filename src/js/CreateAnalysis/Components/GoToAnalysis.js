@@ -1,18 +1,16 @@
 import React, {Component} from "react";
 import {withStyles} from "@material-ui/core/styles";
-import classNames from "classnames";
-import Paper from "@material-ui/core/Paper";
-import Check from "@material-ui/icons/Check";
-import OpenInNew from "@material-ui/icons/OpenInNew";
 import Typography from "@material-ui/core/Typography";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import Link from "@material-ui/core/Link";
-import ListItemText from "@material-ui/core/ListItemText";
-import Divider from "@material-ui/core/Divider";
-import CircularProgress from "@material-ui/core/CircularProgress";
+import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
+import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
+import CheckIcon from "@material-ui/icons/Check";
+import {Redirect} from "react-router-dom";
 
-import {NavLink} from "react-router-dom";
+import ExpansionPanel from "@material-ui/core/ExpansionPanel";
+
+import {twirl, endSimulation} from "./../../BackendInit/loadingArt.js";
+import * as d3 from "d3";
+
 const ipcRenderer = window.ipcRenderer;
 
 const styles = theme => ({
@@ -30,122 +28,134 @@ const styles = theme => ({
   list: {marginLeft: "-10vw"},
   link: {cursor: "-webkit-grab"}
 });
-const typeStyle = {
-  display: "inline",
-  paddingTop: "4vh"
+const mainContainer = {
+  display: "flex",
+  flexDirection: "column",
+  textAlign: "center"
 };
 const wrapper = {
-  display: "flex",
-  verticalAlign: "middle",
-  justifyContent: "center",
-  marginTop: "25vh"
-};
-const iconStyle = {
-  width: 60,
-  height: 60,
-  display: "block",
-  marginTop: " 10%",
-  marginLeft: "35%"
+  textAlign: "center"
 };
 class GoToAnalysis extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      types: ["Tree", "Segment", "Analysis"],
+      textCompleteDisplay: {
+        0: "Tree data has been loaded.",
+        1: "Segment data has been loaded.",
+        2: "Analysis has been loaded"
+      },
+      textPendingDisplay: {
+        0: "Loading tree data.",
+        1: "Loading segement data.",
+        2: "Loading anaylsis data."
+      },
       steps: {},
-      types: [],
-      maxTypes: 3,
-      loadedAnalysisId: null,
-      roundProgressActive: false
+      currStep: 0,
+      completeTypes: [],
+      numStages: 3,
+      loadedAnalysisId: null
     };
   }
   componentDidMount() {
-    ipcRenderer.on("isRoundProgressActive", (event, isActive) => {
-      this.setState({roundProgressActive: isActive});
-    });
+    var svg = d3
+      .select(this._rootNode)
+      .append("svg")
+      .classed("loader", true)
+      .attr("width", "100vw")
+      .attr("height", "50vh")
+      .attr("class", "container")
+      .append("g")
+      .attr("transform", "translate(350,300)");
+
+    twirl(svg);
 
     ipcRenderer.on("analysisLoadingStep", (event, args, type) => {
       var currSteps = this.state.steps;
+      var stepNumber = this.state.currStep;
 
-      currSteps[type] = currSteps.hasOwnProperty(type)
-        ? [...currSteps[type], args]
-        : [args];
+      //Is it a new completed event
+      if (currSteps.hasOwnProperty(type)) {
+        currSteps[type] = currSteps[type] + args;
+      } else {
+        stepNumber = stepNumber + 1;
+        currSteps[type] = args;
+      }
 
-      var types =
-        this.state.types.indexOf(type) === -1
-          ? [...this.state.types, type]
-          : [...this.state.types];
+      var completeTypes = !this.typeHasBeenLoaded(type)
+        ? [...this.state.completeTypes, type]
+        : [...this.state.completeTypes];
 
       var loadedAnalysisId = null;
-      if (this.state.maxTypes === types.length) {
+      //All complete - set analysis ID
+      if (this.state.numStages === stepNumber) {
+        console.log(currSteps.Analysis.split("-AnalysisDone")[0]);
         loadedAnalysisId = JSON.parse(
-          currSteps.Analysis[0].replace("-AnalysisDone", "")
+          currSteps.Analysis.split("-AnalysisDone")[0]
         ).analysis_id;
         this.props.nextClick({});
-        this.props.nextClick({});
+        this.forceStopSimulation();
       }
 
       this.setState({
+        currStep: stepNumber,
         steps: currSteps,
-        types: types,
+        completeTypes: completeTypes,
         loadedAnalysisId: loadedAnalysisId
       });
     });
   }
+  forceStopSimulation = () => endSimulation(d3.select(".loader"));
+
+  typeHasBeenLoaded = type => this.state.completeTypes.indexOf(type) !== -1;
 
   externalLinkClick(id) {
     ipcRenderer.send("goToExternalLink", id, true);
   }
 
+  _setRef(componentNode) {
+    this._rootNode = componentNode;
+  }
+
   render() {
-    const {classes} = this.props;
-    return (
-      <div style={wrapper}>
-        <List
-          component="nav"
-          className={classNames(
-            classes.root,
-            this.state.types.length > 0 ? classes.list : ""
-          )}
-        >
-          {this.state.types.map(type => {
-            return (
-              <div>
-                <ListItem button>
-                  <Check color="primary" />
-                  <ListItemText>
-                    {" "}
-                    <Typography variant="h5" component="h3" style={typeStyle}>
-                      {type} data has been added
-                    </Typography>
-                  </ListItemText>
-                </ListItem>
-                <Divider />
-              </div>
-            );
-          })}{" "}
-        </List>{" "}
-        <Paper className={classes.root} elevation={1}>
-          {this.state.roundProgressActive ? (
-            <CircularProgress color="primary" />
-          ) : this.state.loadedAnalysisId ? (
-            <Typography variant="h5" component="h3" style={typeStyle}>
-              Analysis loading complete.
-              <Link
-                className={classes.link}
-                onClick={() =>
-                  this.externalLinkClick(this.state.loadedAnalysisId)
-                }
-              >
-                <NavLink to="/OpenAnalysis">
-                  <OpenInNew color="primary" style={iconStyle} />
-                </NavLink>
-              </Link>
-              {this.state.successLink}
-            </Typography>
+    const state = this.state;
+    var progressElements =
+      this.state.loadedAnalysisId === null ? (
+        [...Array(state.numStages).keys()].map((stage, i) => {
+          const type = state.types[i];
+          const stageStatus = this.typeHasBeenLoaded(type) ? (
+            <CheckIcon color="primary" />
           ) : (
-            ""
-          )}{" "}
-        </Paper>
+            <FiberManualRecord fontSize="small" />
+          );
+          return (
+            <div>
+              <ExpansionPanel style={{boxShadow: "none"}}>
+                <ExpansionPanelSummary expandIcon={stageStatus}>
+                  <Typography variant="h5" component="h3">
+                    {this.typeHasBeenLoaded(type)
+                      ? state.textCompleteDisplay[i]
+                      : state.textPendingDisplay[i]}
+                  </Typography>
+                </ExpansionPanelSummary>
+              </ExpansionPanel>
+            </div>
+          );
+        })
+      ) : (
+        <div style={wrapper}>
+          {this.externalLinkClick(this.state.loadedAnalysisId)}
+          <Redirect to="/OpenAnalysis" push />
+        </div>
+      );
+
+    return (
+      <div style={mainContainer}>
+        <div>
+          <div id="loadingArt" ref={this._setRef.bind(this)} />
+          {progressElements}
+        </div>
       </div>
     );
   }
