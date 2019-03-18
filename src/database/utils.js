@@ -8,7 +8,6 @@ import {
   parseFileContents,
   pythonParseFileContents
 } from "../resources/utils.js";
-const appRoot = require("app-root-path");
 var writeYaml = require("write-yaml");
 const exec = require("child_process").exec;
 var path = require("path");
