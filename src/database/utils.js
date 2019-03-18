@@ -1,4 +1,10 @@
 import {
+  dashboardConfig,
+  inputConfig,
+  sysCommands,
+  initStages
+} from "../resources/config";
+import {
   parseFileContents,
   pythonParseFileContents
 } from "../resources/utils.js";
@@ -16,7 +22,7 @@ import {
   getFileTypeByFileName,
   getExpectedFileTargetByType
 } from "../js/CreateAnalysis/utils/utils";
-import {dashboardConfig, inputConfig, sysCommands} from "../resources/config";
+
 import {Messages} from "../js/Alerts/Messages";
 import client from "./api/client.js";
 
@@ -45,6 +51,7 @@ var lyraYamlFile = function(params, analysisID) {
 
 //Retireve all created anaylsis
 export const getAllAnalysisFromES = async event => {
+  await client.indices.refresh({index: "analysis"});
   const results = await client.search({
     index: `analysis`,
     body: {
@@ -66,28 +73,62 @@ const formatResults = data => {
   }
   return parsedData;
 };
-export const loadBackend = async (event, params) => {
-  var initScript = path.join(__dirname, "/init.sh");
+export const createDockerComposeYaml = async (filePath, event) => {
+  const data = fs.readFileSync(
+    path.join(__dirname, "docker-compose.json"),
+    "utf8"
+  );
+  const parsedData = JSON.parse(data);
 
-  return new Promise((resolve, reject) => {
-    //Needed to execute scripts in production
-    fixPath();
-
-    var load = exec(initScript);
-
-    load.stderr.on("data", data => {
-      var liveOutput = data.toString();
-      if (!liveOutput.indexOf("up to date")) {
-        event.sender.send("error-WithMsg", data, 30000);
-      }
-    });
-
-    load.stdout.on("data", data => {
-      var liveOutput = data.toString();
-      event.sender.send("intputStages", liveOutput);
+  return new Promise(async (resolve, reject) => {
+    //create yamlfile
+    return await createYamlFile(
+      filePath + "docker-compose.yml",
+      parsedData
+    ).then(path => {
+      resolve(path);
     });
   });
 };
+
+export const loadBackend = async (event, params, vegaHomePath) => {
+  var dockerComposeFilePath = path.join(vegaHomePath, "/docker-compose.yml");
+
+  initStages.map((initStage, stageNumber) => {
+    var command = initStage.filePathRequired
+      ? sysCommands[initStage.name].replace(
+          "{dockerFilePath}",
+          dockerComposeFilePath
+        )
+      : sysCommands[initStage.name];
+
+    return new Promise((resolve, reject) => {
+      //Needed to execute scripts in production
+      fixPath();
+
+      var load = exec(command);
+      if (initStage.completeMarker === "none") {
+        //For commands without feedback
+        event.sender.send("intputStages", "launched", stageNumber);
+      } else {
+        //Display error if occured
+        load.stderr.on("data", data => {
+          var liveOutput = data.toString();
+          event.sender.send("intputStages", liveOutput, stageNumber);
+          if (!liveOutput.indexOf("up to date")) {
+            event.sender.send("error-WithMsg", data, 30000);
+          }
+        });
+        //Live feedback
+        load.stdout.on("data", data => {
+          var liveOutput = data.toString();
+          event.sender.send("intputStages", liveOutput, stageNumber);
+        });
+      }
+    });
+  });
+};
+
 //Execute yaml commands and wait for responses
 const executeYamlLoad = async (yamlFilePath, event) => {
   var loadYamlCommand = sysCommands.pythonParseCommand.replace(
@@ -103,7 +144,6 @@ const executeYamlLoad = async (yamlFilePath, event) => {
     var load = exec(loadYamlCommand);
 
     load.stderr.on("data", data => {
-      event.sender.send("test", data);
       event.sender.send("error-WithMsg", data, 100000);
       reject();
     });
@@ -126,12 +166,11 @@ const executeYamlLoad = async (yamlFilePath, event) => {
 
 //Create meta dat afor a new analysis including versions
 const createYamlMetaObject = async (analysisName, event) => {
-  event.sender.send("test", analysisName);
-  event.sender.send("test", client);
   var version = "";
   await client.search(
     {
       index: `analysis`,
+      requestCache: false,
       body: {
         query: {
           wildcard: {
@@ -141,11 +180,8 @@ const createYamlMetaObject = async (analysisName, event) => {
       }
     },
     function callback(err, response) {
-      event.sender.send("test", response);
-      event.sender.send("test", err);
       //index does not yet exist
       if (err) {
-        event.sender.send("test", "err");
         version = "";
       } else {
         version =
@@ -159,8 +195,6 @@ const createYamlMetaObject = async (analysisName, event) => {
 
   var fileName = analysisName + version + ".yml";
   var filePath = tempPath + fileName;
-  event.sender.send("test", "version");
-  event.sender.send("test", version);
   return {
     analysisID: analysisName + version,
     version: version,
@@ -170,14 +204,14 @@ const createYamlMetaObject = async (analysisName, event) => {
 };
 
 //Write into a ymal file
-const createYamlFile = async (yamlMetaObject, yamlObj, event) => {
+const createYamlFile = async (filePath, yamlObj) => {
   return new Promise((resolve, reject) => {
-    writeYaml(yamlMetaObject.filePath, yamlObj, function(err) {
+    writeYaml(filePath, yamlObj, function(err) {
       if (err) {
         event.sender.send("error-WithMsg", err.toString(), 30000);
         reject(err);
       } else {
-        resolve(yamlMetaObject);
+        resolve(filePath);
       }
     });
   });
@@ -189,6 +223,7 @@ async function insertYamlIntoES(yamlObj, yamlMeta, event) {
   var id = yamlMeta.analysisID;
 
   return await client.create({
+    refresh: true,
     index: "yaml",
     type: "yaml",
     id: id,
@@ -200,22 +235,16 @@ async function insertYamlIntoES(yamlObj, yamlMeta, event) {
 
 //Create a new version of current analysis
 async function createNewYamlVersion(params, event) {
-  event.sender.send("test", "params");
-  event.sender.send("test", params);
   var yamlMetaObject = await createYamlMetaObject(params.name, event);
-
-  event.sender.send("test", "eyaml");
-  event.sender.send("test", yamlMetaObject);
   var yamlObj = new lyraYamlFile(params, yamlMetaObject.analysisID);
 
-  event.sender.send("test", yamlObj);
   await insertYamlIntoES(yamlObj, yamlMetaObject, event);
 
   return new Promise(async (resolve, reject) => {
     //create yamlfile
-    return await createYamlFile(yamlMetaObject, yamlObj, event).then(
-      yamlMeta => {
-        resolve(yamlMeta.filePath);
+    return await createYamlFile(yamlMetaObject.filePath, yamlObj).then(
+      filePath => {
+        resolve(filePath);
       }
     );
   });

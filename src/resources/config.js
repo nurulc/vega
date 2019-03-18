@@ -2,6 +2,12 @@ import {createMuiTheme} from "@material-ui/core/styles";
 var root = require("os").homedir();
 
 export const sysCommands = {
+  dockerComposeUp: "docker-compose -f {dockerFilePath} up -d",
+  removeStaleContent: "docker rm `docker ps -qa`",
+  dockerPullVegaLoader: "docker pull shahcompbio/vega_loader",
+  dockerPullLyraReact: "docker pull shahcompbio/lyra-react",
+  dockerPullLyraGraphQl: "docker pull shahcompbio/lyra-graphql",
+  dockerPullLyraDB: "docker pull shahcompbio/lyra-db",
   pythonParseCommand:
     "docker run --net=vega_default -e YAMLVAR={yaml} -v " +
     root +
@@ -14,7 +20,26 @@ export const sysCommands = {
   esGetAllAnalysis: "curl -XGET http://localhost:9200/analysis/_search?pretty",
   esRefresh: "curl -XPOST http:/localhost:9200/_refresh"
 };
-
+export const initStages = [
+  {name: "removeStaleContent", completeMarker: "none"},
+  {
+    name: "dockerPullLyraReact",
+    completeMarker: "lyra-react:latest"
+  },
+  {
+    name: "dockerPullLyraDB",
+    completeMarker: "lyra-db:latest"
+  },
+  {
+    name: "dockerPullLyraGraphQl",
+    completeMarker: "lyra-graphql:latest"
+  },
+  {name: "dockerComposeUp", completeMarker: "frontend", filePathRequired: true},
+  {
+    name: "dockerPullVegaLoader",
+    completeMarker: "vega_loader:latest"
+  }
+];
 export const theme = createMuiTheme({
   typography: {
     useNextVariants: true,
