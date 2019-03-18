@@ -59,51 +59,62 @@ class MetaDataInput extends Component {
       inputMinLength: 5
     };
   }
+
   setName(e) {
     var inputText = e.target.value;
-    var canContinue = false;
+    this.setState({
+      name: inputText
+    });
+  }
 
-    if (inputText.indexOf(" ") === -1) {
-      canContinue = true;
-    } else {
-      ipcRenderer.send("sendOutWarning", Messages.errorNoSpacesAllowed);
-    }
-    this.setState({
-      name: inputText,
-      canContinue: canContinue
-    });
-  }
   setJiraId(e) {
+    var inputText = e.target.value;
     this.setState({
-      jiraId: e.target.value
+      jiraId: inputText
     });
   }
+
   setDescription(e) {
     this.setState({
       description: e.target.value
     });
   }
+
   createNewAnalysis = () => {
     ipcRenderer.send("createNewAnalysis", this.state);
     this.props.nextClick({...this.state.filePaths});
   };
-  checkInputLength = e => {
-    e.preventDefault();
-    if (e.target.tagName !== "INPUT") {
-      var message = "";
-      if (this.state.jiraId.length === 0) {
-        message = "Jira ID " + Messages.warningFieldIsEmpty;
-      } else if (this.state.jiraId.length <= this.state.inputMinLength) {
-        message = "Jira ID " + Messages.warningFieldNotMinLength;
-      }
-      if (this.state.name.length === 0) {
-        message = "Name " + Messages.warningFieldIsEmpty;
-      } else if (this.state.name.length <= this.state.inputMinLength) {
-        message = "Name " + Messages.warningFieldNotMinLength;
-      }
-      if (message.length > 0) {
-        ipcRenderer.send("sendOutWarning", message);
-      }
+
+  isCorrectInput = (type, fieldName) => {
+    console.log(typeof field);
+    var field = this.state[type];
+    var message;
+    if (field.indexOf(" ") >= 0) {
+      message = Messages.warningFieldHasSpaces.replace("{field}", fieldName);
+    } else if (/[~`!#$%\^&*+=\';,/{}|\\":<>\?]/g.test(field)) {
+      message = Messages.warningFieldHasSpecialCharacters.replace(
+        "{field}",
+        fieldName
+      );
+    } else if (field.length <= this.state.inputMinLength) {
+      message = Messages.warningFieldNotMinLength.replace("{field}", fieldName);
+    } else if (field.length === 0) {
+      message = Messages.warningFieldIsEmpty.replace("{field}", fieldName);
+    }
+
+    if (message) {
+      ipcRenderer.send("sendOutWarning", message);
+      return false;
+    } else {
+      return true;
+    }
+  };
+  checkInput = () => {
+    if (
+      this.isCorrectInput("name", "Analysis name") &&
+      this.isCorrectInput("jiraId", "Jira ID")
+    ) {
+      this.createNewAnalysis();
     }
   };
   render() {
@@ -116,23 +127,15 @@ class MetaDataInput extends Component {
       />
     );
 
-    var continueButton = "";
-    if (
-      this.state.name.length >= this.state.inputMinLength &&
-      this.state.jiraId.length >= this.state.inputMinLength &&
-      this.state.canContinue
-    ) {
-      continueButton = (
-        <NavigationButton
-          style={nextButtonStyles}
-          click={() => this.createNewAnalysis()}
-        />
-      );
-    }
+    var continueButton = (
+      <NavigationButton style={nextButtonStyles} click={this.checkInput} />
+    );
+
     return (
-      <div onClick={this.checkInputLength}>
+      <div>
         <form className={classes.container}>
           <TextField
+            required
             id="name"
             label="Analysis Name"
             className={classes.textField}
@@ -141,6 +144,7 @@ class MetaDataInput extends Component {
             margin="normal"
           />{" "}
           <TextField
+            required
             id="jiraId"
             label="Jira ID"
             className={classes.textField}
