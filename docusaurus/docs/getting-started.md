@@ -26,10 +26,13 @@ If you get a security warning that prevents you from opening the app it is becau
   2. Control-click the app icon and click "Open" from the menu.
 https://support.apple.com/kb/ph25088?locale=en_US
 
-### Setting up Lyra backend
 
-1. Every time you start Vega, make sure your docker is running and you are logged in. You can do this by checking the docker icon on your menu tray.
-2. Start Vega and wait for the all of the components to load. The first time you do this it will take a long time. (5-8 minutes depending on your internet connection) All subsequent times, startup will be faster.
+- Every time you start Vega, make sure your docker is running and you are logged in. You can do this by checking the docker icon on your menu tray.
+
+### Expected states
+- Start Vega and wait for the all of the components to load. The first time you do this it will take a long time. (5-8 minutes depending on your internet connection) All subsequent times, startup will be faster.
+
+- The initial state of Vega will say that there are "No analysis in the database"
 
 ### Loading Data
 
