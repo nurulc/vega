@@ -17,6 +17,8 @@ const _SEP_ = require("path").sep;
 const tempPath = `${_HOME_}${_SEP_}.vega${_SEP_}`;
 const fixPath = require("fix-path");
 
+const log = require("electron-log");
+
 import {
   getFileTypeByFileName,
   getExpectedFileTargetByType
@@ -100,7 +102,7 @@ export const loadBackend = async (event, params, vegaHomePath) => {
           dockerComposeFilePath
         )
       : sysCommands[initStage.name];
-
+    log.info("Loading command" + command);
     return new Promise((resolve, reject) => {
       //Needed to execute scripts in production
       fixPath();
@@ -113,6 +115,7 @@ export const loadBackend = async (event, params, vegaHomePath) => {
         //Display error if occured
         load.stderr.on("data", data => {
           var liveOutput = data.toString();
+          log.info("stout (r)" + liveOutput);
           event.sender.send("intputStages", liveOutput, stageNumber);
           if (!liveOutput.indexOf("up to date")) {
             event.sender.send("error-WithMsg", data, 30000);
@@ -121,6 +124,7 @@ export const loadBackend = async (event, params, vegaHomePath) => {
         //Live feedback
         load.stdout.on("data", data => {
           var liveOutput = data.toString();
+          log.info("stout" + liveOutput);
           event.sender.send("intputStages", liveOutput, stageNumber);
         });
       }

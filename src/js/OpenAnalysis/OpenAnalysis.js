@@ -25,9 +25,6 @@ class OpenAnalysis extends Component {
       ipcRenderer.on("allAnalysis", (event, databaseResults) => {
         this.setState({analysisData: [...databaseResults]});
       });
-      ipcRenderer.on("test", (event, databaseResults) => {
-        console.log(databaseResults);
-      });
     }
   }
   componentWillMount() {

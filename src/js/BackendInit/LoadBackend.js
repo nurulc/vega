@@ -59,11 +59,7 @@ class LoadBackend extends Component {
     twirl(svg);
 
     if (isElectron()) {
-      ipcRenderer.on("test", (event, args) => {
-        console.log(args);
-      });
       ipcRenderer.on("intputStages", (event, args, consoleStep) => {
-        console.log(args);
         var completeMarker = initStages[consoleStep].completeMarker;
         if (args.includes(completeMarker) || completeMarker === "none") {
           if (this.state.numStages === this.state.hasCompleted.length + 1) {
@@ -75,8 +71,6 @@ class LoadBackend extends Component {
               2000
             );
           } else {
-            console.log(this.state.hasCompleted);
-            console.log(consoleStep);
             var completeSet = [...this.state.hasCompleted, consoleStep];
             this.setState({hasCompleted: completeSet});
           }
@@ -84,7 +78,9 @@ class LoadBackend extends Component {
       });
     }
   }
+
   stepHasCompleted = i => this.state.hasCompleted.includes(i);
+
   componentWillMount() {
     //Get all analysis
     ipcRenderer.send("loadBackend");

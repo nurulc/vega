@@ -35,9 +35,9 @@ ipcMain.on("checkForFileErrors", async (event, allParams) => {
   log.info("validating files -" + JSON.stringify(allParams));
 
   var selectedFiles = allParams["args"];
-
+  //File validator for current files selected as a whole
   selectedFiles = multipleFileSelectionCheck(selectedFiles, event);
-
+  //File validator for individal current files selected
   checkIndividualFiles(selectedFiles, allParams, event);
 });
 
@@ -51,8 +51,10 @@ ipcMain.on("goToExternalLink", (event, endpoint, isLocalhost) => {
 //Attempt to delete an analysis
 ipcMain.on("deleteAnalysis", async (event, analysis) => {
   log.info("deleting analyis -" + JSON.stringify(analysis));
+  //Remove instance from es
   await deleteAnalysisFromES(analysis, event);
   log.info("Analysis deleted ");
+  //Refresh all results and show success
   var databaseResults = await getAllAnalysisFromES(event);
   log.info("Fetching all analysis");
   log.info("all analysis" + JSON.stringify(databaseResults));
@@ -65,17 +67,20 @@ ipcMain.on("error-WithMsg", (event, error) => {
   log.error("error -" + error);
   event.sender.send("error-WithMsg", error);
 });
+
 //Send out a warning
 ipcMain.on("sendOutWarning", (event, msg) => {
   log.warn("warning -" + msg);
   event.sender.send("warning-WithMsg", msg);
 });
+
 //Retrieve all analysis
 ipcMain.on("getAllAnalysis", async event => {
   log.info("fetching all analyis");
   var databaseResults = await getAllAnalysisFromES(event);
   event.sender.send("allAnalysis", databaseResults);
 });
+
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
   log.info("creating backend");
@@ -83,8 +88,10 @@ ipcMain.on("createNewAnalysis", async (event, params) => {
 });
 
 ipcMain.on("loadBackend", async (event, params) => {
+  //Move the json file into the vega home path
   createDockerComposeYaml(_APPHOME_, event);
   log.info("loading backend");
+  //Begin loading docker components
   var complete = await loadBackend(event, params, _APPHOME_);
   log.info("backend loaded");
   event.sender.send("completeBackendLoad", complete);
@@ -98,11 +105,15 @@ function createWindow() {
       return;
     });
   }
+  //Set the app icon
   var appIcon = new Tray(path.join(__dirname, "/../build/icon.png"));
+
   log.info("backend loaded");
+  log.info("creating new window");
   mainWindow = new BrowserWindow({
     width: 900,
     height: 900,
+    resizable: false,
     icon: path.join(__dirname, "/../build/icon.png"),
     webPreferences: {
       nodeIntegration: false,
