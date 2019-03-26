@@ -4,11 +4,9 @@ import isElectron from "is-electron";
 import {initStages} from "../../resources/config";
 import OpenAnalysis from "./../OpenAnalysis/OpenAnalysis";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 import {Redirect} from "react-router-dom";
-import Delay from "react-delay";
 import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
 import CheckIcon from "@material-ui/icons/Check";
 
@@ -21,6 +19,7 @@ class LoadBackend extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      dbIsUp: false,
       hasCompleted: [],
       canContinue: false,
       numStages: 6,
@@ -59,17 +58,19 @@ class LoadBackend extends Component {
     twirl(svg);
 
     if (isElectron()) {
+      ipcRenderer.on("pollDb", event => {
+        ipcRenderer.send("pollDb");
+      });
+      ipcRenderer.on("dbIsUp", event => {
+        this.setState({dbIsUp: true});
+      });
+
       ipcRenderer.on("intputStages", (event, args, consoleStep) => {
         var completeMarker = initStages[consoleStep].completeMarker;
         if (args.includes(completeMarker) || completeMarker === "none") {
           if (this.state.numStages === this.state.hasCompleted.length + 1) {
             //New stage
-            setTimeout(
-              function() {
-                this.setState({canContinue: true});
-              }.bind(this),
-              2000
-            );
+            this.setState({canContinue: true});
           } else {
             var completeSet = [...this.state.hasCompleted, consoleStep];
             this.setState({hasCompleted: completeSet});
@@ -83,15 +84,22 @@ class LoadBackend extends Component {
 
   componentWillMount() {
     //Get all analysis
+    ipcRenderer.send("pollDb");
     ipcRenderer.send("loadBackend");
   }
   _setRef(componentNode) {
     this._rootNode = componentNode;
   }
+  removeSvg = () =>
+    d3
+      .select(this._rootNode)
+      .exit()
+      .remove();
 
   render() {
     var stages = "";
-    if (this.state.canContinue) {
+    if (this.state.canContinue && this.state.dbIsUp) {
+      this.removeSvg();
       return (
         <div>
           <Redirect to="/OpenAnalysis" push />

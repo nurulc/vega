@@ -2,6 +2,11 @@ import {createMuiTheme} from "@material-ui/core/styles";
 var root = require("os").homedir();
 
 export const sysCommands = {
+  removeHomeFolder: "rm -r ~/.vega",
+  dockerStopAll: "docker stop `docker ps -qa`",
+  dockerPruneContainer: "docker rm `docker ps -qa` -f",
+  dockerPruneImage: "docker rmi -f `docker images -qa ` -f",
+  dockerComposeDown: "docker-compose -f {dockerFilePath} stop",
   dockerComposeUp: "docker-compose -f {dockerFilePath} up -d",
   removeStaleContent: "docker rm `docker ps -qa`",
   dockerPullVegaLoader: "docker pull shahcompbio/vega_loader",

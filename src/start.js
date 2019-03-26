@@ -17,7 +17,13 @@ import {
   checkIndividualFiles,
   sysCommands
 } from "./resources/utils.js";
+
 import {
+  pollDb,
+  esPing,
+  startLyra,
+  stopLyra,
+  restartLyra,
   loadBackend,
   createAnalysis,
   getAllAnalysis,
@@ -80,6 +86,10 @@ ipcMain.on("getAllAnalysis", async event => {
   var databaseResults = await getAllAnalysisFromES(event);
   event.sender.send("allAnalysis", databaseResults);
 });
+//Poll the DB
+ipcMain.on("pollDb", async event => {
+  pollDb(event);
+});
 
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
@@ -96,6 +106,34 @@ ipcMain.on("loadBackend", async (event, params) => {
   log.info("backend loaded");
   event.sender.send("completeBackendLoad", complete);
 });
+const template = () => [
+  {
+    label: "Vega",
+    role: "File",
+    submenu: [
+      {
+        label: "Stop Lyra",
+        click: (menuItem, currentWindow) => {
+          stopLyra(currentWindow.webContents, _APPHOME_);
+        }
+      },
+      {
+        label: "Start Lyra",
+        click: (menuItem, currentWindow) => {
+          startLyra(currentWindow.webContents, _APPHOME_);
+        }
+      },
+      {
+        label: "About",
+        click() {
+          require("electron").shell.openExternal(
+            "https://github.com/shahcompbio/vega/blob/docker-build/docusaurus/docs/getting-started.md"
+          );
+        }
+      }
+    ]
+  }
+];
 
 //Initialize the main window
 function createWindow() {
@@ -108,12 +146,15 @@ function createWindow() {
   //Set the app icon
   var appIcon = new Tray(path.join(__dirname, "/../build/icon.png"));
 
+  const menu = Menu.buildFromTemplate(template());
+  Menu.setApplicationMenu(menu);
   log.info("backend loaded");
   log.info("creating new window");
   mainWindow = new BrowserWindow({
     width: 900,
     height: 900,
     resizable: false,
+    frame: false,
     icon: path.join(__dirname, "/../build/icon.png"),
     webPreferences: {
       nodeIntegration: false,
@@ -131,7 +172,7 @@ function createWindow() {
   );
 
   // Open the DevTools.
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
 
   mainWindow.on("closed", () => {
     mainWindow = null;

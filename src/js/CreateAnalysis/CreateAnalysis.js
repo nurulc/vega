@@ -4,11 +4,13 @@ import MetaDataInput from "./Components/MetaDataInput.js";
 import AddInput from "./Components/AddInput.js";
 import GoToAnalysis from "./Components/GoToAnalysis.js";
 import "./style.css";
+import DBStatus from "../BackendInit/DBStatus.js";
 
+import isElectron from "is-electron";
+const ipcRenderer = window.ipcRenderer;
 class CreateAnalysis extends Component {
   constructor(props) {
     super(props);
-
     this.state = {
       activeStep: 0,
       filePaths: null
@@ -52,6 +54,7 @@ class CreateAnalysis extends Component {
       );
     return (
       <div>
+        <DBStatus />
         <EnhancedProgressBar activeStep={this.state.activeStep} />
         {content}
       </div>

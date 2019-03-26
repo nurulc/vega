@@ -1,6 +1,9 @@
 import React, {Component} from "react";
 import isElectron from "is-electron";
 import EnhancedTable from "./Components/EnhancedTable.js";
+import DBStatus from "../BackendInit/DBStatus.js";
+import {Messages} from "../Alerts/Messages.js";
+
 const ipcRenderer = window.ipcRenderer;
 
 class OpenAnalysis extends Component {
@@ -23,7 +26,9 @@ class OpenAnalysis extends Component {
     if (isElectron()) {
       //Handle correct file path
       ipcRenderer.on("allAnalysis", (event, databaseResults) => {
-        this.setState({analysisData: [...databaseResults]});
+        if (databaseResults !== null) {
+          this.setState({analysisData: [...databaseResults]});
+        }
       });
     }
   }
@@ -36,6 +41,7 @@ class OpenAnalysis extends Component {
     return (
       <div>
         {" "}
+        <DBStatus />
         <EnhancedTable
           goToExternalLink={this.goToExternalLink}
           analysisData={this.state.analysisData}

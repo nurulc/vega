@@ -50,15 +50,35 @@ var lyraYamlFile = function(params, analysisID) {
   };
 };
 
+export const pollDb = async event => {
+  await client.indices
+    .refresh({index: "analysis"})
+    .then(result => {
+      event.sender.send("dbIsUp", true);
+    })
+    .catch(function(err) {
+      setTimeout(function() {
+        event.sender.send("pollDb", err);
+      }, 3000);
+    });
+};
 //Retireve all created anaylsis
 export const getAllAnalysisFromES = async event => {
+  log.info("analysis starting");
   await client.indices.refresh({index: "analysis"});
-  const results = await client.search({
-    index: `analysis`,
-    body: {
-      size: 100
+  const results = await client.search(
+    {
+      index: `analysis`,
+      body: {
+        size: 100
+      }
+    },
+    {
+      ignore: [404],
+      maxRetries: 10
     }
-  });
+  );
+  log.info("analysis -" + JSON.stringify(results));
   return formatResults(results);
 };
 
@@ -74,6 +94,7 @@ const formatResults = data => {
   }
   return parsedData;
 };
+
 export const createDockerComposeYaml = async (filePath, event) => {
   const data = fs.readFileSync(
     path.join(__dirname, "docker-compose.json"),
@@ -130,6 +151,44 @@ export const loadBackend = async (event, params, vegaHomePath) => {
       }
     });
   });
+};
+
+export const stopLyra = async (event, vegaHomePath) => {
+  event.send("signalLyraChange", "stopping");
+  var dockerComposeFilePath = path.join(vegaHomePath, "/docker-compose.yml");
+
+  var stopCommand = sysCommands.dockerComposeDown.replace(
+    "{dockerFilePath}",
+    dockerComposeFilePath
+  );
+  log.info("Loading command" + stopCommand);
+  return new Promise((resolve, reject) => {
+    //Needed to execute scripts in production
+    fixPath();
+    var stopExec = exec(stopCommand);
+    //Live feedback
+    var doneCounter = 0;
+    stopExec.stderr.on("data", data => {
+      var liveOutput = data.toString();
+      log.info("stout (er)" + liveOutput);
+
+      if (liveOutput.includes("done")) {
+        if (doneCounter++ === 2) {
+          event.send("dbStatus", false);
+          event.send("success-WithMsg", Messages.successStop);
+          setTimeout(function() {
+            event.send("signalLyraChange", "stopped");
+          }, 4000);
+        }
+        resolve();
+      }
+    });
+  });
+};
+
+export const startLyra = async (event, vegaHomePath) => {
+  event.send("signalLyraChange", "starting");
+  event.send("dbStatus", true);
 };
 
 //Execute yaml commands and wait for responses
