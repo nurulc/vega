@@ -39,3 +39,9 @@ https://support.apple.com/kb/ph25088?locale=en_US
 1. Drag and drop or select files through the interface. Currently Vega only supports csv, gml and newick files.
 2. Add an name and a jira ID for the current analysis and then click next. The data should take a minute or two to load
 3. Vega will bring you to your new dashboard when it is done loading.
+
+### Removing Vega + Lyra
+
+1. From the app, on the top menu bar hit "Stop Lyra". 
+2. Uninstall Docker by going into the docker menu, clicking "Preferences", "Reset" 
+3. Uninstall Vega by moving it to your Trash folder.
