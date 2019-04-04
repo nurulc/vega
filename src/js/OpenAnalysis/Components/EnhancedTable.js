@@ -6,6 +6,7 @@ import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import EnhancedTableHead from "./EnhancedTableHeader";
+import EnhancedTableRow from "./EnhancedTableRow.js";
 import {withStyles} from "@material-ui/core/styles";
 var moment = require("moment-timezone");
 const tableWrapper = {
@@ -51,12 +52,6 @@ class EnhancedTable extends React.Component {
     this.state.selected.hasOwnProperty("analysis_id") &&
     this.state.selected["analysis_id"] === analysis_id;
 
-  //Converts the UTC stored time to the current timezone
-  getDateFromUTC = date =>
-    moment(date)
-      .local()
-      .format("HH:mm:ss YYYY/MM/DD");
-
   render() {
     const {
       classes,
@@ -65,13 +60,13 @@ class EnhancedTable extends React.Component {
       deleteAnalysis
     } = this.props;
 
-    const data = analysisData.length > 0 ? analysisData : [];
+    const allAnalysis = analysisData.length > 0 ? analysisData : [];
 
     return (
       <Paper className={classes.root}>
         <EnhancedTableToolbar
           defaultBannerText={
-            data.length > 0
+            allAnalysis.length > 0
               ? "All Analysis"
               : "No analysis found in the database."
           }
@@ -81,7 +76,7 @@ class EnhancedTable extends React.Component {
           resetSelect={this.resetSelect}
           classes={classes}
         />
-        {data.length > 0 ? (
+        {allAnalysis.length > 0 ? (
           <div style={tableWrapper}>
             <Table className={classes.table} aria-labelledby="All Analysis">
               <EnhancedTableHead
@@ -91,30 +86,16 @@ class EnhancedTable extends React.Component {
                 onRequestSort={this.handleRequestSort}
               />
               <TableBody>
-                {data.map((analysis, index) => {
-                  const isSelected = this.isSelected(analysis.analysis_id);
-                  var date = moment.utc(analysis.upload_date);
+                {allAnalysis.map((analysis, index) => {
                   return (
-                    <TableRow
-                      hover
-                      onClick={event => this.handleClick(event, analysis)}
-                      role="checkbox"
-                      aria-checked={isSelected}
-                      tabIndex={-1}
+                    <EnhancedTableRow
+                      handleClick={(event, analysis) =>
+                        this.handleClick(event, analysis)
+                      }
                       key={analysis.title + index}
-                      selected={isSelected}
-                    >
-                      <TableCell component="th" scope="row">
-                        {analysis.title}
-                      </TableCell>
-                      <TableCell component="th" scope="row">
-                        {analysis.description}
-                      </TableCell>
-                      <TableCell component="th" scope="row">
-                        {analysis.jira_id}
-                      </TableCell>
-                      <TableCell>{this.getDateFromUTC(date)}</TableCell>
-                    </TableRow>
+                      analysis={analysis}
+                      isSelected={this.isSelected(analysis.analysis_id)}
+                    />
                   );
                 })}
               </TableBody>

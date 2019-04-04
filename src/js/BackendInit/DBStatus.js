@@ -1,11 +1,10 @@
 import React, {Component} from "react";
 import FormControlLabel from "@material-ui/core/FormControlLabel";
 import Radio from "@material-ui/core/Radio";
-import LoadBackend from "./LoadBackend.js";
 import {Redirect} from "react-router-dom";
 import isElectron from "is-electron";
 
-import {twirl} from "./loadingArt.js";
+import {twirl, twirlData} from "./loadingArt.js";
 import * as d3 from "d3";
 
 const ipcRenderer = window.ipcRenderer;
@@ -33,10 +32,10 @@ class DBStatus extends Component {
       .select(this._rootNode)
       .append("svg")
       .attr("width", "100vw")
-      .attr("height", "50vh")
+      .attr("height", "80vh")
       .attr("class", "container")
       .append("g")
-      .attr("transform", "translate(400,300)");
+      .attr("transform", "translate(425,400)");
 
     twirl(svg);
   }
@@ -51,12 +50,8 @@ class DBStatus extends Component {
         .remove();
     }
   };
-
-  render() {
-    const {onChange, dbStatus} = this.state;
-    this.svgCleanupCheck(onChange, dbStatus);
-
-    const statusStyle = onChange
+  getStyleStatus = onChange =>
+    onChange
       ? {
           background: "white",
           opacity: 0.4,
@@ -65,12 +60,18 @@ class DBStatus extends Component {
         }
       : {};
 
-    const loader =
-      dbStatus & (onChange === "stopping") ? (
-        <div id="loadingArt" ref={this._setRef.bind(this)} />
-      ) : (
-        ""
-      );
+  getLoaderVisual = (onChange, dbStatus) =>
+    dbStatus & (onChange === "stopping") ? (
+      <div id="loadingArt" ref={this._setRef.bind(this)} />
+    ) : (
+      ""
+    );
+  render() {
+    const {onChange, dbStatus} = this.state;
+    const statusStyle = this.getStyleStatus(onChange);
+    const loader = this.getLoaderVisual(onChange, dbStatus);
+
+    this.svgCleanupCheck(onChange, dbStatus);
 
     return dbStatus & (onChange === "starting") ? (
       <div>

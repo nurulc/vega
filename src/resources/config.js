@@ -1,6 +1,11 @@
 import {createMuiTheme} from "@material-ui/core/styles";
 var root = require("os").homedir();
-
+export const inputStagesLabels = [
+  "Add input files",
+  "Specify metadata info",
+  "Loading Data",
+  "Dashboard Created"
+];
 export const sysCommands = {
   removeHomeFolder: "rm -r ~/.vega",
   dockerStopAll: "docker stop `docker ps -qa`",
@@ -8,7 +13,7 @@ export const sysCommands = {
   dockerPruneImage: "docker rmi -f `docker images -qa ` -f",
   dockerComposeDown: "docker-compose -f {dockerFilePath} stop",
   dockerComposeUp: "docker-compose -f {dockerFilePath} up -d",
-  removeStaleContent: "docker rm `docker ps -qa`",
+  removeStaleContent: "docker image prune -f && docker rm `docker ps -qa`",
   dockerPullVegaLoader: "docker pull shahcompbio/vega_loader",
   dockerPullLyraReact: "docker pull shahcompbio/lyra-react",
   dockerPullLyraGraphQl: "docker pull shahcompbio/lyra-graphql",

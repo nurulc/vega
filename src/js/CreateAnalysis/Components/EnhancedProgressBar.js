@@ -1,9 +1,12 @@
 import React from "react";
-import {withStyles} from "@material-ui/core/styles";
+
 import Stepper from "@material-ui/core/Stepper";
 import Step from "@material-ui/core/Step";
 import StepLabel from "@material-ui/core/StepLabel";
 
+import {inputStagesLabels} from "../../../resources/config.js";
+
+import {withStyles} from "@material-ui/core/styles";
 const styles = theme => ({
   root: {
     width: "100vw"
@@ -17,13 +20,6 @@ const styles = theme => ({
   }
 });
 
-const steps = [
-  "Add input files",
-  "Specify metadata info",
-  "Loading Data",
-  "Dashboard Created"
-];
-
 class EnhancedProgressBar extends React.Component {
   render() {
     const {classes, activeStep} = this.props;
@@ -31,7 +27,7 @@ class EnhancedProgressBar extends React.Component {
     return (
       <div className={classes.root}>
         <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map(label => {
+          {inputStagesLabels.map(label => {
             return (
               <Step key={label}>
                 <StepLabel>{label}</StepLabel>

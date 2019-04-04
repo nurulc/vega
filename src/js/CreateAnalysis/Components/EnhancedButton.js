@@ -2,15 +2,16 @@ import Button from "@material-ui/core/Button";
 import React from "react";
 
 const EnhancedButton = props => {
+  const {click, style, text} = props;
   return (
     <Button
-      onClick={() => (props.click ? props.click() : "")}
+      onClick={() => (click ? click() : "")}
       size="large"
       variant="contained"
-      style={props.style}
+      style={style}
       component="span"
     >
-      {props.text}
+      {text}
     </Button>
   );
 };

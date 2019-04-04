@@ -1,8 +1,10 @@
 import React from "react";
+
 import {withStyles} from "@material-ui/core/styles";
+import classNames from "classnames";
+
 import Paper from "@material-ui/core/Paper";
 import Typography from "@material-ui/core/Typography";
-import classNames from "classnames";
 import EnhancedButton from "./EnhancedButton.js";
 
 const classes = theme => ({
@@ -33,34 +35,6 @@ const DropComponents = ({
   onDelete,
   classes
 }) => {
-  //Create a boxed component for the user to drop and delete files
-
-  const header = (
-    <div>
-      <Typography variant="h5" gutterBottom>
-        Drag and drop files here
-      </Typography>
-      <Typography variant="h5" gutterBottom>
-        or
-      </Typography>
-    </div>
-  );
-  const uploadButton = type => (
-    <div>
-      <input
-        style={{display: "none"}}
-        accept="*"
-        id={"fileSelectionButton"}
-        multiple
-        onChange={() => fileSelection()}
-        type="file"
-      />
-      <label htmlFor={"fileSelectionButton"}>
-        <EnhancedButton text={"Upload"} />
-      </label>
-    </div>
-  );
-  //Entire drop component with box outline
   return (
     <Paper
       className={classNames(classes.root, "dragWells", "wells")}
@@ -68,11 +42,37 @@ const DropComponents = ({
     >
       {" "}
       <div style={headerStyles}>
-        {header}
-        {uploadButton()}
+        <Header />
+        <UploadButton fileSelection={fileSelection} />
       </div>
     </Paper>
   );
 };
 
+const Header = () => (
+  <div>
+    <Typography variant="h5" gutterBottom>
+      Drag and drop files here
+    </Typography>
+    <Typography variant="h5" gutterBottom>
+      or
+    </Typography>
+  </div>
+);
+
+const UploadButton = ({fileSelection}) => (
+  <div>
+    <input
+      style={{display: "none"}}
+      accept="*"
+      id={"fileSelectionButton"}
+      multiple
+      onChange={() => fileSelection()}
+      type="file"
+    />
+    <label htmlFor={"fileSelectionButton"}>
+      <EnhancedButton text={"Upload"} />
+    </label>
+  </div>
+);
 export default withStyles(classes)(DropComponents);

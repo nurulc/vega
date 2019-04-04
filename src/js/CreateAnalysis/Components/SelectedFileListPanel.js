@@ -1,7 +1,7 @@
 import React from "react";
+
 import Typography from "@material-ui/core/Typography";
 import Divider from "@material-ui/core/Divider";
-
 import SelectedFileList from "./SelectedFileList";
 
 import {inputConfig} from "../../../resources/config.js";

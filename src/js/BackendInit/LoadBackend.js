@@ -2,7 +2,6 @@ import React, {Component} from "react";
 import isElectron from "is-electron";
 
 import {initStages} from "../../resources/config";
-import OpenAnalysis from "./../OpenAnalysis/OpenAnalysis";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
@@ -10,11 +9,29 @@ import {Redirect} from "react-router-dom";
 import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
 import CheckIcon from "@material-ui/icons/Check";
 
-import {twirl} from "./loadingArt.js";
+import {twirl, twirlData} from "./loadingArt.js";
 import * as d3 from "d3";
 
 const ipcRenderer = window.ipcRenderer;
-
+const numStages = 6;
+const completeStageMessages = {
+  0: "Created a clean workspace",
+  1: "Fetched Lyra frontend components",
+  2: "Fetched database components",
+  3: "Fetched graphql components",
+  4: "Built Lyra",
+  5: "Created your data loaders",
+  6: "Complete"
+};
+const pendingStageMessages = {
+  0: "Creating a clean workspace",
+  1: "Fetching Lyra frontend components",
+  2: "Fetching database components",
+  3: "Fetching graphql components",
+  4: "Building Lyra",
+  5: "Creating your data loaders",
+  6: "Complete"
+};
 class LoadBackend extends Component {
   constructor(props) {
     super(props);
@@ -22,25 +39,6 @@ class LoadBackend extends Component {
       dbIsUp: false,
       hasCompleted: [],
       canContinue: false,
-      numStages: 6,
-      completeStageMessages: {
-        0: "Created a clean workspace",
-        1: "Fetched Lyra frontend components",
-        2: "Fetched database components",
-        3: "Fetched graphql components",
-        4: "Built Lyra",
-        5: "Created your data loaders",
-        6: "Complete"
-      },
-      pendingStageMessages: {
-        0: "Creating a clean workspace",
-        1: "Fetching Lyra frontend components",
-        2: "Fetching database components",
-        3: "Fetching graphql components",
-        4: "Building Lyra",
-        5: "Creating your data loaders",
-        6: "Complete"
-      },
       currStage: 0
     };
   }
@@ -55,7 +53,7 @@ class LoadBackend extends Component {
       .append("g")
       .attr("transform", "translate(400,300)");
 
-    twirl(svg);
+    twirl(svg, twirlData);
 
     if (isElectron()) {
       ipcRenderer.on("pollDb", event => {
@@ -67,9 +65,10 @@ class LoadBackend extends Component {
 
       ipcRenderer.on("intputStages", (event, args, consoleStep) => {
         var completeMarker = initStages[consoleStep].completeMarker;
+        //If feedback from the process is the complete marker or it is "none" continue
         if (args.includes(completeMarker) || completeMarker === "none") {
-          if (this.state.numStages === this.state.hasCompleted.length + 1) {
-            //New stage
+          //Is this the last stage?
+          if (numStages === this.state.hasCompleted.length + 1) {
             this.setState({canContinue: true});
           } else {
             var completeSet = [...this.state.hasCompleted, consoleStep];
@@ -81,45 +80,41 @@ class LoadBackend extends Component {
   }
 
   stepHasCompleted = i => this.state.hasCompleted.includes(i);
+  getStageStatusIcon = isStepComplete =>
+    isStepComplete ? (
+      <CheckIcon color="primary" />
+    ) : (
+      <FiberManualRecord fontSize="small" />
+    );
 
   componentWillMount() {
-    //Get all analysis
+    //Get all analysis and poll to see if the db is up
     ipcRenderer.send("pollDb");
     ipcRenderer.send("loadBackend");
   }
   _setRef(componentNode) {
     this._rootNode = componentNode;
   }
-  removeSvg = () =>
-    d3
-      .select(this._rootNode)
-      .exit()
-      .remove();
 
   render() {
     var stages = "";
     if (this.state.canContinue && this.state.dbIsUp) {
-      this.removeSvg();
       return (
         <div>
           <Redirect to="/OpenAnalysis" push />
         </div>
       );
     } else {
-      stages = [...Array(this.state.numStages).keys()].map((stage, i) => {
-        const stageStatus = this.stepHasCompleted(i) ? (
-          <CheckIcon color="primary" />
-        ) : (
-          <FiberManualRecord fontSize="small" />
-        );
+      stages = [...Array(numStages).keys()].map((stage, i) => {
+        const stageStatus = this.getStageStatusIcon(this.stepHasCompleted(i));
         return (
           <div>
             <ExpansionPanel style={{boxShadow: "none"}}>
               <ExpansionPanelSummary expandIcon={stageStatus}>
                 <Typography variant="h5" component="h3">
                   {this.stepHasCompleted(i)
-                    ? this.state.completeStageMessages[i]
-                    : this.state.pendingStageMessages[i]}
+                    ? completeStageMessages[i]
+                    : pendingStageMessages[i]}
                 </Typography>
               </ExpansionPanelSummary>
             </ExpansionPanel>

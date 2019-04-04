@@ -1,8 +1,12 @@
 import React, {Component} from "react";
+
 import NavigationButton from "./NavigationButton.js";
 import TextField from "@material-ui/core/TextField";
-import {withStyles} from "@material-ui/core/styles";
+
 import {Messages} from "../../Alerts/Messages.js";
+
+import {withStyles} from "@material-ui/core/styles";
+
 const ipcRenderer = window.ipcRenderer;
 
 const styles = theme => ({
@@ -35,19 +39,27 @@ var backButtonStyles = {
   marginTop: "-50px",
   float: "left"
 };
+
 var nextButtonStyles = {
   float: "right",
   marginRight: "10vw",
   marginTop: "-50px"
 };
 
+const formFields = [
+  {
+    type: "name",
+    label: "Analysis Name"
+  },
+  {type: "jiraId", label: "Jira ID"},
+  {type: "description", label: "Description"}
+];
+
 class MetaDataInput extends Component {
   constructor(props, context) {
     super(props, context);
 
-    this.setName = this.setName.bind(this);
-    this.setDescription = this.setDescription.bind(this);
-    this.setJiraId = this.setJiraId.bind(this);
+    this.setField = this.setField.bind(this);
 
     this.state = {
       name: "",
@@ -60,24 +72,10 @@ class MetaDataInput extends Component {
     };
   }
 
-  setName(e) {
-    var inputText = e.target.value;
-    this.setState({
-      name: inputText
-    });
-  }
-
-  setJiraId(e) {
-    var inputText = e.target.value;
-    this.setState({
-      jiraId: inputText
-    });
-  }
-
-  setDescription(e) {
-    this.setState({
-      description: e.target.value
-    });
+  setField(event, type) {
+    var newValue = {};
+    newValue[type] = event.target.value;
+    this.setState({...newValue});
   }
 
   createNewAnalysis = () => {
@@ -85,33 +83,35 @@ class MetaDataInput extends Component {
     this.props.nextClick({...this.state.filePaths});
   };
 
+  dynamicMessage = (originalMessage, fieldName) =>
+    originalMessage.replace("{field}", fieldName);
+
   isCorrectInput = (type, fieldName) => {
-    console.log(typeof field);
     var field = this.state[type];
     var message;
+    console.log(typeof message);
     if (field.indexOf(" ") >= 0) {
-      message = Messages.warningFieldHasSpaces.replace("{field}", fieldName);
+      message = Messages.warningFieldHasSpaces;
     } else if (/[~`!#$%\^&*+=\';,/{}|\\":<>\?]/g.test(field)) {
-      message = Messages.warningFieldHasSpecialCharacters.replace(
-        "{field}",
-        fieldName
-      );
+      message = Messages.warningFieldHasSpecialCharacters;
     } else if (field.length <= this.state.inputMinLength) {
-      message = Messages.warningFieldNotMinLength.replace("{field}", fieldName);
+      message = Messages.warningFieldNotMinLength;
     } else if (field.length === 0) {
-      message = Messages.warningFieldIsEmpty.replace("{field}", fieldName);
+      message = Messages.warningFieldIsEmpty;
     }
 
     if (message) {
-      ipcRenderer.send("sendOutWarning", message);
-      return false;
-    } else {
-      return true;
+      ipcRenderer.send(
+        "sendOutWarning",
+        this.dynamicMessage(message, fieldName)
+      );
     }
+    return typeof message === "undefined";
   };
+
   checkInput = () => {
     if (
-      this.isCorrectInput("name", "Analysis name") &&
+      this.isCorrectInput("name", "Analysis Name") &&
       this.isCorrectInput("jiraId", "Jira ID")
     ) {
       this.createNewAnalysis();
@@ -134,33 +134,17 @@ class MetaDataInput extends Component {
     return (
       <div>
         <form className={classes.container}>
-          <TextField
-            required
-            id="name"
-            label="Analysis Name"
-            className={classes.textField}
-            value={this.state.name}
-            onChange={this.setName}
-            margin="normal"
-          />{" "}
-          <TextField
-            required
-            id="jiraId"
-            label="Jira ID"
-            className={classes.textField}
-            value={this.state.jiraId}
-            onChange={this.setJiraId}
-            margin="normal"
-          />
-          <TextField
-            multiline
-            id="description"
-            label="Description"
-            className={classes.textField}
-            value={this.state.description}
-            onChange={this.setDescription}
-            margin="normal"
-          />
+          {formFields.map(field => (
+            <TextField
+              required
+              id={field.type}
+              label={field.label}
+              className={classes.textField}
+              value={this.state[field.type]}
+              onChange={e => this.setField(e, field.type)}
+              margin="normal"
+            />
+          ))}
         </form>
         {backButton}
         {continueButton}

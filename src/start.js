@@ -20,10 +20,8 @@ import {
 
 import {
   pollDb,
-  esPing,
   startLyra,
   stopLyra,
-  restartLyra,
   loadBackend,
   createAnalysis,
   getAllAnalysis,

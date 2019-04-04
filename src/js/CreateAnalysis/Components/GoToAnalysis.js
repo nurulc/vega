@@ -1,14 +1,15 @@
 import React, {Component} from "react";
-import {withStyles} from "@material-ui/core/styles";
+import {Redirect} from "react-router-dom";
+
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
 import CheckIcon from "@material-ui/icons/Check";
-import {Redirect} from "react-router-dom";
-
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
 
-import {twirl, endSimulation} from "./../../BackendInit/loadingArt.js";
+import {withStyles} from "@material-ui/core/styles";
+
+import {twirl} from "./../../BackendInit/loadingArt.js";
 import * as d3 from "d3";
 
 const ipcRenderer = window.ipcRenderer;
@@ -28,29 +29,33 @@ const styles = theme => ({
   list: {marginLeft: "-10vw"},
   link: {cursor: "-webkit-grab"}
 });
+
 const mainContainer = {
   display: "flex",
   flexDirection: "column",
   textAlign: "center"
 };
+
 const wrapper = {
   textAlign: "center"
 };
+
+const loadingStageTypes = ["Tree", "Segment", "Analysis"];
+const textCompleteDisplay = {
+  0: "Tree data has been loaded.",
+  1: "Segment data has been loaded.",
+  2: "Analysis has been loaded"
+};
+const textPendingDisplay = {
+  0: "Loading tree data.",
+  1: "Loading segement data.",
+  2: "Loading anaylsis data."
+};
+
 class GoToAnalysis extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      types: ["Tree", "Segment", "Analysis"],
-      textCompleteDisplay: {
-        0: "Tree data has been loaded.",
-        1: "Segment data has been loaded.",
-        2: "Analysis has been loaded"
-      },
-      textPendingDisplay: {
-        0: "Loading tree data.",
-        1: "Loading segement data.",
-        2: "Loading anaylsis data."
-      },
       steps: {},
       currStep: 0,
       completeTypes: [],
@@ -89,11 +94,11 @@ class GoToAnalysis extends Component {
 
       var loadedAnalysisId = null;
       //All complete - set analysis ID
-      if (this.state.numStages === stepNumber) {
-        console.log(currSteps.Analysis.split("-AnalysisDone")[0]);
+      if (loadingStageTypes.length === stepNumber) {
         loadedAnalysisId = JSON.parse(
           currSteps.Analysis.split("-AnalysisDone")[0]
         ).analysis_id;
+        //Force the header to advance to complete
         this.props.nextClick({});
         this.forceStopSimulation();
       }
@@ -106,12 +111,17 @@ class GoToAnalysis extends Component {
       });
     });
   }
-  forceStopSimulation = () => endSimulation(d3.select(".loader"));
+
+  forceStopSimulation = () =>
+    d3
+      .select(this._rootNode)
+      .selectAll("*")
+      .interrupt();
 
   typeHasBeenLoaded = type => this.state.completeTypes.indexOf(type) !== -1;
 
-  externalLinkClick(id) {
-    ipcRenderer.send("goToExternalLink", id, true);
+  externalLinkClick(analysisId) {
+    ipcRenderer.send("goToExternalLink", analysisId, true);
   }
 
   _setRef(componentNode) {
@@ -119,35 +129,18 @@ class GoToAnalysis extends Component {
   }
 
   render() {
-    const state = this.state;
+    var {loadedAnalysisId} = this.state;
     var progressElements =
       this.state.loadedAnalysisId === null ? (
-        [...Array(state.numStages).keys()].map((stage, i) => {
-          const type = state.types[i];
-          const stageStatus = this.typeHasBeenLoaded(type) ? (
-            <CheckIcon color="primary" />
-          ) : (
-            <FiberManualRecord fontSize="small" />
-          );
-          return (
-            <div>
-              <ExpansionPanel style={{boxShadow: "none"}}>
-                <ExpansionPanelSummary expandIcon={stageStatus}>
-                  <Typography variant="h5" component="h3">
-                    {this.typeHasBeenLoaded(type)
-                      ? state.textCompleteDisplay[i]
-                      : state.textPendingDisplay[i]}
-                  </Typography>
-                </ExpansionPanelSummary>
-              </ExpansionPanel>
-            </div>
-          );
-        })
+        <AnalysisLoadingProgress
+          getStageStatusIcon={getStageStatusIcon}
+          typeHasBeenLoaded={this.typeHasBeenLoaded}
+        />
       ) : (
-        <div style={wrapper}>
-          {this.externalLinkClick(this.state.loadedAnalysisId)}
-          <Redirect to="/OpenAnalysis" push />
-        </div>
+        <AnalysisLoadingComplete
+          wrapper={wrapper}
+          forceRedirect={this.externalLinkClick(this.state.loadedAnalysisId)}
+        />
       );
 
     return (
@@ -160,5 +153,38 @@ class GoToAnalysis extends Component {
     );
   }
 }
+const AnalysisLoadingProgress = ({typeHasBeenLoaded, stageStatusIcon}) => {
+  return loadingStageTypes.map((stage, index) => {
+    var isTypeLoaded = typeHasBeenLoaded(stage);
+    var stageStatusIcon = getStageStatusIcon(isTypeLoaded);
+    return (
+      <div>
+        <ExpansionPanel style={{boxShadow: "none"}}>
+          <ExpansionPanelSummary expandIcon={stageStatusIcon}>
+            <Typography variant="h5" component="h3">
+              {isTypeLoaded
+                ? textCompleteDisplay[index]
+                : textPendingDisplay[index]}
+            </Typography>
+          </ExpansionPanelSummary>
+        </ExpansionPanel>
+      </div>
+    );
+  });
+};
+
+const AnalysisLoadingComplete = ({wrapper, forceRedirect}) => (
+  <div style={wrapper}>
+    {forceRedirect}
+    <Redirect to="/OpenAnalysis" push />
+  </div>
+);
+
+const getStageStatusIcon = isTypeLoaded =>
+  isTypeLoaded ? (
+    <CheckIcon color="primary" />
+  ) : (
+    <FiberManualRecord fontSize="small" />
+  );
 
 export default withStyles(styles)(GoToAnalysis);

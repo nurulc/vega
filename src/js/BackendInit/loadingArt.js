@@ -1,12 +1,12 @@
 import * as d3 from "d3";
-//Art taken from https://bl.ocks.org/philipcdavis/b5224a272556fcb2d0c776b7a247ede4
+//Art inspired from https://bl.ocks.org/philipcdavis/b5224a272556fcb2d0c776b7a247ede4
 
 const rays = 100;
 const rayWidth = 0.02;
 const cir = Math.PI * 2;
 const chunk = cir / rays;
 
-const twirlData = d3.range(rays).map((d, i) => {
+export const twirlData = d3.range(rays).map((d, i) => {
   return {
     startAngle: i * chunk,
     endAngle: i * chunk + rayWidth,
@@ -17,6 +17,7 @@ const twirlData = d3.range(rays).map((d, i) => {
 var arc = d3.arc().innerRadius(50);
 
 const arcTween = (d, varient) => {
+  //console.log(d.outerRadius);
   var interpolate = d3.interpolateNumber(10, d.outerRadius + varient);
   return function(t) {
     d.outerRadius = interpolate(t);
@@ -24,12 +25,19 @@ const arcTween = (d, varient) => {
   };
 };
 
-export const endSimulation = svg => svg.selectAll(".piece").interrupt();
+export const endSimulation = svg => svg.selectAll(".piece").clear();
 
-export const twirl = svg =>
+export const twirl = svg => {
+  const data = d3.range(rays).map((d, i) => {
+    return {
+      startAngle: i * chunk,
+      endAngle: i * chunk + rayWidth,
+      outerRadius: 150 - i
+    };
+  });
   svg
     .selectAll(".piece")
-    .data(twirlData)
+    .data(data)
     .enter()
     .append("path")
     .attr("class", "piece")
@@ -55,3 +63,4 @@ export const twirl = svg =>
         })
         .on("start", repeat);
     });
+};
