@@ -1,26 +1,38 @@
 var fs = require("fs");
 const path = require("path");
 const url = require("url");
-import {Messages} from "../js/Alerts/Messages";
-import {getRandomJsonFileName} from "../database/utils";
-import {inputConfig, sysCommands} from "./config";
 const exec = require("child_process").exec;
 const csv = require("fast-csv");
 const getLine = require("get-line");
 const es = require("event-stream");
 
-//For each file check if it has the correct parameters
+import {Messages} from "../js/Alerts/Messages";
+import {getRandomJsonFileName} from "../database/utils";
+import {inputConfig, sysCommands} from "./config";
+
+/*For each file check if it has the correct parameters. Function will fire off
+ * messages to the render process - either confirmed-correctFilePath or error-WithMsg
+ *
+ *
+ * @param selectedFiles {Array}   - A list of selected files
+ * @param allParams     {Object}  - All file information
+ * @param event         {Object}  - Sends out events to render processes
+ *
+ */
 export const checkIndividualFiles = (selectedFiles, allParams, event) => {
-  selectedFiles.map(async param => {
+  selectedFiles.map(async individualFileParam => {
     var paramCheckObj = Object.assign({}, allParams);
-    paramCheckObj["args"] = Object.assign({}, param);
+    paramCheckObj["args"] = Object.assign({}, individualFileParam);
 
     var errors = checkForFileErrors(paramCheckObj);
+
     if (errors) {
       event.sender.send("error-WithMsg", errors);
     } else {
-      await fileParsing(param).then(eventPromise => {
+      await fileParsing(individualFileParam).then(eventPromise => {
+        //Map all of the confirmations or rejections and fire the events off
         Object.keys(eventPromise).map(eventType => {
+          //Will either be confirmed-correctFilePath or error-WithMsg
           event.sender.send(eventType, eventPromise[eventType]);
         });
       });
@@ -28,7 +40,13 @@ export const checkIndividualFiles = (selectedFiles, allParams, event) => {
   });
 };
 
-//Checks to see if the number of files selected is less than the max # allowed
+/*Checks to see if the number of files selected is less than the max # allowed
+ *
+ * @param args          {Array}   - A list of file arguments
+ * @param event         {Object}  - Sends out events to render processes
+ *
+ * @return {Object}     - Will return an object of allowed file paths
+ */
 export const multipleFileSelectionCheck = (args, event) => {
   var message,
     selectedFiles = null;
@@ -52,6 +70,7 @@ export const multipleFileSelectionCheck = (args, event) => {
           "{inputs}",
           targetType
         );
+        //Remove those files from the list
         finalTargets[targetType] = "";
       }
       return finalTargets;
@@ -72,19 +91,25 @@ export const multipleFileSelectionCheck = (args, event) => {
 
   return selectedFiles;
 };
-export const checkForFileErrors = params => {
-  var args = params.args;
-  var errorMsg = null;
-  if (!isCorrectExt(args)) {
+
+/* Checks for various file errors
+ *
+ * @param params    {Object}  - A file object
+ *
+ * @return {String} - An error message
+ */
+const checkForFileErrors = params => {
+  var errorMsg;
+  if (!isCorrectExt(params.args)) {
     //create error, wrong ext
     errorMsg = Messages.errorWrongFileExt;
   } else if (!lessThanMaxNumFile(params)) {
     //Attempting to add too many files
     errorMsg = Messages.errorMaxNumFilesReached;
-  } else if (!isFileReadable(args)) {
+  } else if (!isFileReadable(params.args.path)) {
     //create error, not readable
     errorMsg = Messages.errorNotReadable;
-  } else if (!doesFileExist(args)) {
+  } else if (!doesFileExist(params.args.path)) {
     //create error, path does not exist
     errorMsg = Messages.errorBadFilePath;
   } else if (isDuplicate(params)) {
@@ -93,13 +118,25 @@ export const checkForFileErrors = params => {
   return errorMsg;
 };
 
-//Returns a list of missing csv headers
-function getMissingFileHeaders(headerList, param) {
-  var requiredHeaders = inputConfig[param.target].requiredFields;
-  return requiredHeaders.filter(x => !headerList.includes(x));
-}
+/* Returns a list of missing csv headers
+ *
+ * @param param         {Object}  - A file object
+ * @param headerList    {Array}   - A list of headers
+ *
+ * @return {String} - An error or confirmation message
+ */
+const getMissingFileHeaders = (headerList, param) =>
+  inputConfig[param.target].requiredFields.filter(
+    header => !headerList.includes(header)
+  );
 
-export const fileParsing = async param => {
+/* Parses the selected file and returns an error or confirmation event
+ *
+ * @param param         {Object}  - A file object
+ *
+ * @return {String} - An error or confirmation message
+ */
+const fileParsing = async param => {
   var input = param.target;
   var alertObj = {};
 
@@ -124,17 +161,22 @@ export const fileParsing = async param => {
   });
 };
 
-//Parse the first row in the csv file
+/* Parse the first row in the csv file
+ *
+ * @param param         {Object}  - A file object
+ * @param callback      {Object}  - A callback function
+ *
+ */
 export const parseFileHeaderContents = async (param, callback) => {
-  const path = param.path;
-  var getLines = getLine({
+  var getLinesConfig = getLine({
     lines: [1],
     encoding: "utf8"
   });
+
   return new Promise(async function(resolve, reject) {
     await fs
-      .createReadStream(path)
-      .pipe(getLines)
+      .createReadStream(param.path)
+      .pipe(getLinesConfig)
       .pipe(
         es.map(function(line, next) {
           var data = line.split(",").map(function(c) {
@@ -147,53 +189,45 @@ export const parseFileHeaderContents = async (param, callback) => {
   });
 };
 
-//Deprecated
-export const pythonParseFileContents = async (param, event) => {
-  var fileName = getRandomJsonFileName();
-  var command = sysCommands.pythonParseFile
-    .replace("$FILEPATH", param.pathName)
-    .replace("$FILENAME", fileName);
-
-  return new Promise(async function(resolve, reject) {
-    exec(command, function(error, stdout, stderr) {
-      if (stdout) {
-        var newFileObj = {
-          jsonPath: fileName,
-          pathName: param.pathName
-        };
-        resolve(newFileObj);
-      }
-    });
-  });
-};
-
-//Check to see if file is a duplicated
+/* Check to see if file is a duplicated
+ *
+ * @param param         {Object}  - A file object
+ *
+ */
 const isDuplicate = param => {
   return param.filePaths[param.args.target].indexOf(param.args.path) > -1;
 };
 
-//Check to see if a user has input the correct min # of files
-const lessThanMaxNumFile = param => {
-  return !inputConfig[param.args.target].hasOwnProperty("maxFiles")
+/* Check to see if a user has input the correct min # of files
+ *
+ * @param param     {Object}  - A file object
+ *
+ */
+const lessThanMaxNumFile = param =>
+  !inputConfig[param.args.target].hasOwnProperty("maxFiles")
     ? true
     : inputConfig[param.args.target].maxFiles >=
-        param.filePaths[param.args.target].length + 1;
-};
+      param.filePaths[param.args.target].length + 1;
 
-//Does the selected file have the correct extension
-const isCorrectExt = args => {
-  //Does the extension match the location it was dropped
-  //Does the extension match the allowed ext
-  return inputConfig.hasOwnProperty(args.target) &&
-    inputConfig[args.target]["extensions"].indexOf(args.ext) > -1
+/* Does the selected file have the correct extension
+ *
+ * @param args   {Object}  - A file object
+ *
+ */
+const isCorrectExt = args =>
+  inputConfig.hasOwnProperty(args.target) &&
+  inputConfig[args.target]["extensions"].indexOf(args.ext) > -1
     ? true
     : false;
-};
 
-//Is the file readable
-const isFileReadable = args => {
+/* Is the file readable
+ *
+ * @param args   {Object}  - A file object
+ *
+ */
+const isFileReadable = path => {
   var isFileReadable = true;
-  fs.readFile(args.path, "utf-8", (err, data) => {
+  fs.readFile(path, "utf-8", (err, data) => {
     //Check if file is readable
     if (err) {
       isFileReadable = false;
@@ -202,10 +236,14 @@ const isFileReadable = args => {
   return isFileReadable;
 };
 
-//Does the selected file exist
-const doesFileExist = args => {
+/* Does the selected file exist
+ *
+ * @param args   {Object}  - A file object
+ *
+ */
+const doesFileExist = path => {
   var doesFileExist = true;
-  fs.stat(args.path, function(err, stat) {
+  fs.stat(path, function(err, stat) {
     //Check for non existing file
     if (err) {
       if (err.code === "ENOENT") {
