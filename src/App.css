@@ -38,5 +38,6 @@ body a:hover {
 }
 body a:focus {outline:0;}
 body {
+  overflow:!important hidden;
   background-color: #fdfdfd !important;
 }

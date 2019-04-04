@@ -89,7 +89,6 @@ class MetaDataInput extends Component {
   isCorrectInput = (type, fieldName) => {
     var field = this.state[type];
     var message;
-    console.log(typeof message);
     if (field.indexOf(" ") >= 0) {
       message = Messages.warningFieldHasSpaces;
     } else if (/[~`!#$%\^&*+=\';,/{}|\\":<>\?]/g.test(field)) {
@@ -119,17 +118,6 @@ class MetaDataInput extends Component {
   };
   render() {
     var {classes} = this.props;
-    const backButton = (
-      <NavigationButton
-        style={backButtonStyles}
-        click={() => this.props.backClick({...this.state.filePaths})}
-        isBack={true}
-      />
-    );
-
-    var continueButton = (
-      <NavigationButton style={nextButtonStyles} click={this.checkInput} />
-    );
 
     return (
       <div>
@@ -146,8 +134,12 @@ class MetaDataInput extends Component {
             />
           ))}
         </form>
-        {backButton}
-        {continueButton}
+        <NavigationButton
+          style={backButtonStyles}
+          click={() => this.props.backClick({...this.state.filePaths})}
+          isBack={true}
+        />
+        <NavigationButton style={nextButtonStyles} click={this.checkInput} />
       </div>
     );
   }

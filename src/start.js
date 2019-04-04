@@ -12,10 +12,7 @@ var shell = require("electron").shell;
 
 import {
   multipleFileSelectionCheck,
-  checkForFileErrors,
-  fileParsing,
-  checkIndividualFiles,
-  sysCommands
+  checkIndividualFiles
 } from "./resources/utils.js";
 
 import {
