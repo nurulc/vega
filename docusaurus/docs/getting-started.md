@@ -45,3 +45,14 @@ https://support.apple.com/kb/ph25088?locale=en_US
 1. From the app, on the top menu bar hit "Stop Lyra". 
 2. Uninstall Docker by going into the docker menu, clicking "Preferences", "Reset" 
 3. Uninstall Vega by moving it to your Trash folder.
+
+### Development installation
+1. Git clone the project and cd into it
+2. Type "yarn install" 
+3. Type "yarn run react-build"
+4. Type "yarn run build"
+5. Copy the file "src/database/docker-compose.json" into the "build/database" folder
+6. Type "yarn run start"
+
+- To show console uncomment the line "mainWindow.webContents.openDevTools();" in "src/start.js" 
+
