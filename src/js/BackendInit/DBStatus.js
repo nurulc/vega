@@ -4,7 +4,7 @@ import Radio from "@material-ui/core/Radio";
 import {Redirect} from "react-router-dom";
 import isElectron from "is-electron";
 
-import {twirl, twirlData} from "./loadingArt.js";
+import {twirl} from "./loadingArt.js";
 import * as d3 from "d3";
 
 const ipcRenderer = window.ipcRenderer;

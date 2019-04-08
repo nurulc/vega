@@ -2,13 +2,15 @@ import React, {Component} from "react";
 import isElectron from "is-electron";
 
 import {initStages} from "../../resources/config";
+
+import LoadingCounter from "./LoadingCounter.js";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanel from "@material-ui/core/ExpansionPanel";
-import {Redirect} from "react-router-dom";
 import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
 import CheckIcon from "@material-ui/icons/Check";
 
+import {Redirect} from "react-router-dom";
 import {twirl, twirlData} from "./loadingArt.js";
 import * as d3 from "d3";
 
@@ -38,8 +40,7 @@ class LoadBackend extends Component {
     this.state = {
       dbIsUp: false,
       hasCompleted: [],
-      canContinue: false,
-      currStage: 0
+      canContinue: false
     };
   }
 
@@ -69,7 +70,7 @@ class LoadBackend extends Component {
         if (args.includes(completeMarker) || completeMarker === "none") {
           //Is this the last stage?
           if (numStages === this.state.hasCompleted.length + 1) {
-            this.setState({canContinue: true});
+            //  this.setState({canContinue: true});
           } else {
             var completeSet = [...this.state.hasCompleted, consoleStep];
             this.setState({hasCompleted: completeSet});
@@ -126,6 +127,12 @@ class LoadBackend extends Component {
     return (
       <div>
         {" "}
+        <div style={{transform: `translate(406px, 307px)`}}>
+          <LoadingCounter
+            completedSteps={this.state.hasCompleted.length}
+            totalSteps={numStages}
+          />
+        </div>
         <div id="loadingArt" ref={this._setRef.bind(this)} />
         {stages}
       </div>

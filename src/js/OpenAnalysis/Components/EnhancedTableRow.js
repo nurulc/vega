@@ -1,7 +1,5 @@
 import React from "react";
 
-import {allAnalysisTableHeaders} from "../../../resources/config.js";
-
 import TableCell from "@material-ui/core/TableCell";
 import TableRow from "@material-ui/core/TableRow";
 

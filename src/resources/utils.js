@@ -100,7 +100,7 @@ export const multipleFileSelectionCheck = (args, event) => {
  */
 const checkForFileErrors = params => {
   var errorMsg;
-  if (!isCorrectExt(params.args)) {
+  if (!isCorrectExt(params.args.target, params.args.ext)) {
     //create error, wrong ext
     errorMsg = Messages.errorWrongFileExt;
   } else if (!lessThanMaxNumFile(params)) {
@@ -214,9 +214,9 @@ const lessThanMaxNumFile = param =>
  * @param args   {Object}  - A file object
  *
  */
-const isCorrectExt = args =>
-  inputConfig.hasOwnProperty(args.target) &&
-  inputConfig[args.target]["extensions"].indexOf(args.ext) > -1
+const isCorrectExt = (target, extension) =>
+  inputConfig.hasOwnProperty(target) &&
+  inputConfig[target]["extensions"].indexOf(extension) > -1
     ? true
     : false;
 
@@ -238,7 +238,7 @@ const isFileReadable = path => {
 
 /* Does the selected file exist
  *
- * @param args   {Object}  - A file object
+ * @param args   {Object}  - A path
  *
  */
 const doesFileExist = path => {

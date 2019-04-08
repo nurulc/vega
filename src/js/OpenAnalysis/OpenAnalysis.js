@@ -2,7 +2,6 @@ import React, {Component} from "react";
 import isElectron from "is-electron";
 import EnhancedTable from "./Components/EnhancedTable.js";
 import DBStatus from "../BackendInit/DBStatus.js";
-import {Messages} from "../Alerts/Messages.js";
 
 const ipcRenderer = window.ipcRenderer;
 

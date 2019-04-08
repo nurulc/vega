@@ -1,14 +1,15 @@
 import React from "react";
+
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableRow from "@material-ui/core/TableRow";
 import Paper from "@material-ui/core/Paper";
+
 import EnhancedTableToolbar from "./EnhancedTableToolbar";
 import EnhancedTableHead from "./EnhancedTableHeader";
 import EnhancedTableRow from "./EnhancedTableRow.js";
+
 import {withStyles} from "@material-ui/core/styles";
-var moment = require("moment-timezone");
+
 const tableWrapper = {
   overflowX: "auto"
 };

@@ -1,13 +1,6 @@
-import {
-  dashboardConfig,
-  inputConfig,
-  sysCommands,
-  initStages
-} from "../resources/config";
-import {
-  parseFileContents,
-  pythonParseFileContents
-} from "../resources/utils.js";
+import {dashboardConfig, sysCommands, initStages} from "../resources/config";
+import {parseFileContents} from "../resources/utils.js";
+
 var writeYaml = require("write-yaml");
 const exec = require("child_process").exec;
 var path = require("path");
@@ -19,23 +12,26 @@ const fixPath = require("fix-path");
 
 const log = require("electron-log");
 
-import {
-  getFileTypeByFileName,
-  getExpectedFileTargetByType
-} from "../js/CreateAnalysis/utils/utils";
-
 import {Messages} from "../js/Alerts/Messages";
 import client from "./api/client.js";
 
-//Create a yaml file to load into ES
+/* Create an analysisby creating a yaml file and executing it
+ *
+ * @param params     {Object}  - All file information
+ * @param event         {Object}  - Sends out events to render processes
+ *
+ */
 export const createAnalysis = async (params, event) => {
   var yamlFilePath = await createNewYamlVersion(params, event);
-
-  var finalExecute = await executeYamlLoad(yamlFilePath, event);
-  return finalExecute;
+  return await executeYamlLoad(yamlFilePath, event);
 };
 
-//Yaml file layout
+/* Create an a yaml file object
+ *
+ * @param params            {Object}  - All analysis
+ * @param analysisID        {String}  - Analysis ID
+ *
+ */
 var lyraYamlFile = function(params, analysisID) {
   this.project = dashboardConfig.project;
   this.title = analysisID;
@@ -49,20 +45,32 @@ var lyraYamlFile = function(params, analysisID) {
     tree: params.filePaths.tree[0]
   };
 };
-
+/* Poll ES to see if it is running
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ *
+ */
 export const pollDb = async event => {
+  log.info("Polling ES");
   await client.indices
     .refresh({index: "analysis"})
     .then(result => {
+      log.info("ES UP");
       event.sender.send("dbIsUp", true);
     })
     .catch(function(err) {
       setTimeout(function() {
+        log.info("ES still down");
         event.sender.send("pollDb", err);
       }, 3000);
     });
 };
-//Retireve all created anaylsis
+
+/* Retireve all created anaylsis
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ *
+ */
 export const getAllAnalysisFromES = async event => {
   log.info("analysis starting");
   await client.indices.refresh({index: "analysis"});
@@ -79,22 +87,27 @@ export const getAllAnalysisFromES = async event => {
     }
   );
   log.info("analysis -" + JSON.stringify(results));
-  return formatResults(results);
+  return formatResults(results.hits.hits);
 };
 
-//Format all analysis to be viewed
-const formatResults = data => {
-  var parsedData = data.hits.hits;
-  if (parsedData.length > 0) {
-    parsedData = parsedData.map(hit => {
-      var formattedObj = hit._source;
-      formattedObj.id = hit._id;
-      return formattedObj;
-    });
-  }
-  return parsedData;
-};
+/* Format all analysis to be viewed
+ *
+ * @param event   {Object}  - Sends out events to render processes
+ *
+ */
+const formatResults = data =>
+  data.length > 0
+    ? data.map(hit => ({
+        ...hit._source,
+        id: hit._id
+      }))
+    : data;
 
+/* Construct a docker yaml file
+ *
+ * @param event   {Object}  - Sends out events to render processes
+ *
+ */
 export const createDockerComposeYaml = async (filePath, event) => {
   const data = fs.readFileSync(
     path.join(__dirname, "docker-compose.json"),
@@ -103,7 +116,7 @@ export const createDockerComposeYaml = async (filePath, event) => {
   const parsedData = JSON.parse(data);
 
   return new Promise(async (resolve, reject) => {
-    //create yamlfile
+    //create yamlfile with parsed data
     return await createYamlFile(
       filePath + "docker-compose.yml",
       parsedData
@@ -113,46 +126,99 @@ export const createDockerComposeYaml = async (filePath, event) => {
   });
 };
 
+/* Return the relative command, with path if needed
+ *
+ * @param currStage               {Object}  - an initialization stage
+ * @param dockerComposeFilePath   {String}  - vega home path + docker-compose.yml
+ *
+ * @return a command string
+ */
+const getFullCommand = (currStage, dockerComposeFilePath) =>
+  currStage.filePathRequired
+    ? sysCommands[currStage.name].replace(
+        "{dockerFilePath}",
+        dockerComposeFilePath
+      )
+    : sysCommands[currStage.name];
+
+/* On return of error from a command
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ * @param data          {Object}  - Data returned from the command
+ * @param stageNumber   {Int}     - Relative stage number from all
+ *
+ * @return an event relative to what the feedback is
+ */
+const commandError = (event, data, stageNumber) => {
+  var liveOutput = data.toString();
+
+  log.info("stout (err)" + liveOutput);
+
+  //Output can come back as errors when parts are already running
+  //feedback includes "up to date"
+  //Send outout back to front end unless it is actually an error
+  event.sender.send("intputStages", liveOutput, stageNumber);
+  //If actually an error
+  if (!liveOutput.indexOf("up to date")) {
+    log.info("feedback from error - " + data);
+
+    event.sender.send("error-WithMsg", data, 30000);
+  }
+};
+/* On return of feedback from a command
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ * @param data          {Object}  - Data returned from the command
+ * @param stageNumber   {Int}     - Relative stage number from all
+ *
+ * @return an feedback to front end
+ */
+const commandFeedback = (event, data, stageNumber) => {
+  var liveOutput = data.toString();
+  log.info("stout from command" + liveOutput);
+  event.sender.send("intputStages", liveOutput, stageNumber);
+};
+
+/* Load all parts of the back end
+ *
+ * @param event   {Object}  - Sends out events to render processes
+ *
+ */
 export const loadBackend = async (event, params, vegaHomePath) => {
   var dockerComposeFilePath = path.join(vegaHomePath, "/docker-compose.yml");
 
   initStages.map((initStage, stageNumber) => {
-    var command = initStage.filePathRequired
-      ? sysCommands[initStage.name].replace(
-          "{dockerFilePath}",
-          dockerComposeFilePath
-        )
-      : sysCommands[initStage.name];
+    const command = getFullCommand(initStage, dockerComposeFilePath);
+
     log.info("Loading command" + command);
     return new Promise((resolve, reject) => {
       //Needed to execute scripts in production
       fixPath();
-
       var load = exec(command);
+
+      //For commands without feedback, such as cleaning the home folder
       if (initStage.completeMarker === "none") {
-        //For commands without feedback
         event.sender.send("intputStages", "launched", stageNumber);
       } else {
-        //Display error if occured
-        load.stderr.on("data", data => {
-          var liveOutput = data.toString();
-          log.info("stout (r)" + liveOutput);
-          event.sender.send("intputStages", liveOutput, stageNumber);
-          if (!liveOutput.indexOf("up to date")) {
-            event.sender.send("error-WithMsg", data, 30000);
-          }
-        });
         //Live feedback
+        load.stderr.on("data", data => {
+          commandError(event, data, stageNumber);
+        });
+
         load.stdout.on("data", data => {
-          var liveOutput = data.toString();
-          log.info("stout" + liveOutput);
-          event.sender.send("intputStages", liveOutput, stageNumber);
+          commandFeedback(event, data, stageNumber);
         });
       }
     });
   });
 };
 
+/* Stop lyra backend
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ * @param vegaHomePath  {String}  - The user's vega home path
+ *
+ */
 export const stopLyra = async (event, vegaHomePath) => {
   event.send("signalLyraChange", "stopping");
   var dockerComposeFilePath = path.join(vegaHomePath, "/docker-compose.yml");
@@ -186,12 +252,24 @@ export const stopLyra = async (event, vegaHomePath) => {
   });
 };
 
-export const startLyra = async (event, vegaHomePath) => {
+/* Start lyra backend
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ *
+ */
+export const startLyra = async event => {
+  log.info("Starting Lyra");
   event.send("signalLyraChange", "starting");
   event.send("dbStatus", true);
 };
 
-//Execute yaml commands and wait for responses
+/* Execute yaml commands and wait for responses
+ *
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ * @param yamlFilePath  {String}  - The user's path to the yaml file
+ *
+ */
 const executeYamlLoad = async (yamlFilePath, event) => {
   var loadYamlCommand = sysCommands.pythonParseCommand.replace(
     "{yaml}",
@@ -202,9 +280,8 @@ const executeYamlLoad = async (yamlFilePath, event) => {
     //Needed to execute scripts in production
     fixPath();
 
-    event.sender.send("isRoundProgressActive", true);
     var load = exec(loadYamlCommand);
-
+    log.info("Executing command - " + loadYamlCommand);
     load.stderr.on("data", data => {
       event.sender.send("error-WithMsg", data, 100000);
       reject();
@@ -212,60 +289,44 @@ const executeYamlLoad = async (yamlFilePath, event) => {
 
     load.stdout.on("data", data => {
       var liveOutput = data.toString();
-
+      var outputType;
       if (liveOutput.indexOf("-TreeDone") !== -1) {
-        event.sender.send("analysisLoadingStep", liveOutput, "Tree");
+        outputType = "Tree";
       } else if (liveOutput.indexOf("-SegDone") !== -1) {
-        event.sender.send("analysisLoadingStep", liveOutput, "Segment");
+        outputType = "Segment";
       } else if (liveOutput.indexOf("-AnalysisDone") !== -1) {
-        event.sender.send("isRoundProgressActive", false);
-        event.sender.send("analysisLoadingStep", liveOutput, "Analysis");
+        outputType = "Analysis";
         resolve();
+      }
+      if (outputType) {
+        event.sender.send("analysisLoadingStep", liveOutput, outputType);
       }
     });
   });
 };
 
-//Create meta dat afor a new analysis including versions
+/* Create meta data for a new analysis in ES
+ *
+ * @param event         {Object}  - Sends out events to render processes
+ * @param analysisName  {String}  - The name of the analyis
+ *
+ */
 const createYamlMetaObject = async (analysisName, event) => {
-  var version = "";
-  await client.search(
-    {
-      index: `analysis`,
-      requestCache: false,
-      body: {
-        query: {
-          wildcard: {
-            analysis_id: analysisName + "*"
-          }
-        }
-      }
-    },
-    function callback(err, response) {
-      //index does not yet exist
-      if (err) {
-        version = "";
-      } else {
-        version =
-          response.hits.hits.length === 0
-            ? ""
-            : "_v" + (Number(response.hits.hits.length) + 1);
-      }
-      return;
-    }
-  );
-
-  var fileName = analysisName + version + ".yml";
+  var fileName = analysisName + ".yml";
   var filePath = tempPath + fileName;
   return {
-    analysisID: analysisName + version,
-    version: version,
+    analysisID: analysisName,
     fileName: fileName,
     filePath: filePath
   };
 };
 
-//Write into a ymal file
+/* Write into a ymal file
+ *
+ * @param filePath         {Object}  - file path to where to put the yaml
+ * @param yamlObj          {Object}  - yaml obj created from users meta data input
+ *
+ */
 const createYamlFile = async (filePath, yamlObj) => {
   return new Promise((resolve, reject) => {
     writeYaml(filePath, yamlObj, function(err) {
@@ -279,29 +340,41 @@ const createYamlFile = async (filePath, yamlObj) => {
   });
 };
 
-//Insert yaml for history purposes
-async function insertYamlIntoES(yamlObj, yamlMeta, event) {
+/* Insert yaml for history purposes
+ *
+ * @param yamlMeta         {Object}  - Sends out events to render processes
+ * @param yamlObj          {Object}  - The name of the analyis
+ * @param event            {Object}  - Sends out events to render processes
+ *
+ */
+const insertYamlIntoES = async (yamlObj, yamlMeta, event) => {
   yamlObj.fileName = yamlMeta.fileName;
-  var id = yamlMeta.analysisID;
 
   return await client.create({
     refresh: true,
     index: "yaml",
     type: "yaml",
-    id: id,
+    id: yamlMeta.analysisID,
     body: {
       yamlObj
     }
   });
-}
+};
 
-//Create a new version of current analysis
+/* Create a new version of current analysis
+ *
+ * @param params           {Object}  - Object from user input
+ * @param event            {Object}  - Sends out events to render processes
+ *
+ * @return FilePath - of the new yaml file
+ */
 async function createNewYamlVersion(params, event) {
+  log.info("creating yaml meta data");
   var yamlMetaObject = await createYamlMetaObject(params.name, event);
   var yamlObj = new lyraYamlFile(params, yamlMetaObject.analysisID);
-
+  //Insert as backup
   await insertYamlIntoES(yamlObj, yamlMetaObject, event);
-
+  log.info("inserted yaml as backup");
   return new Promise(async (resolve, reject) => {
     //create yamlfile
     return await createYamlFile(yamlMetaObject.filePath, yamlObj).then(
@@ -312,8 +385,12 @@ async function createNewYamlVersion(params, event) {
   });
 }
 
-//Delete an analysis instance from ES
-export async function deleteAnalysisFromES(analysis, event) {
+/* Delete an analysis instance from ES
+ *
+ * @param analysis          {Object}  - Analysis to be deleted
+ *
+ */
+export async function deleteAnalysisFromES(analysis) {
   await client.indices.delete({
     index: `ce00_${analysis.analysis_id.toLowerCase()}_*`
   });

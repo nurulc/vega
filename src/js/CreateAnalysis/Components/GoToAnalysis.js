@@ -129,7 +129,6 @@ class GoToAnalysis extends Component {
   }
 
   render() {
-    var {loadedAnalysisId} = this.state;
     var progressElements =
       this.state.loadedAnalysisId === null ? (
         <AnalysisLoadingProgress

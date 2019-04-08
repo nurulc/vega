@@ -88,7 +88,7 @@ ipcMain.on("pollDb", async event => {
 
 //Create a new instance in the DB
 ipcMain.on("createNewAnalysis", async (event, params) => {
-  log.info("creating backend");
+  log.info("creating new analyis");
   var finalAnalysis = await createAnalysis(params, event);
 });
 
@@ -149,7 +149,6 @@ function createWindow() {
     width: 900,
     height: 900,
     resizable: false,
-    frame: false,
     icon: path.join(__dirname, "/../build/icon.png"),
     webPreferences: {
       nodeIntegration: false,

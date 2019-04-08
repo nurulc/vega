@@ -6,8 +6,6 @@ import GoToAnalysis from "./Components/GoToAnalysis.js";
 import "./style.css";
 import DBStatus from "../BackendInit/DBStatus.js";
 
-import isElectron from "is-electron";
-const ipcRenderer = window.ipcRenderer;
 class CreateAnalysis extends Component {
   constructor(props) {
     super(props);

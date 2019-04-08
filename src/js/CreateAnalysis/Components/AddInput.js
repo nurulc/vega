@@ -44,11 +44,10 @@ class AddInput extends Component {
   constructor(props) {
     super(props);
 
+    var setCanProceedToMeta = false;
     if (props.filePaths !== null) {
       dashboardConfig["filePaths"] = props.filePaths;
       setCanProceedToMeta = true;
-    } else {
-      var setCanProceedToMeta = false;
     }
 
     this.state = {
@@ -56,6 +55,7 @@ class AddInput extends Component {
       proceedToMeta: setCanProceedToMeta
     };
   }
+
   canProceedToMeta = newPathList => {
     //Check if min number of files reached to continue
     var canContinueList = this.state.input.map(inputObj => {
