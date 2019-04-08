@@ -1,6 +1,7 @@
 import React, {Component} from "react";
 import {Redirect} from "react-router-dom";
 
+import LoadingCounter from "../../BackendInit/LoadingCounter";
 import Typography from "@material-ui/core/Typography";
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary";
 import FiberManualRecord from "@material-ui/icons/FiberManualRecord";
@@ -145,6 +146,12 @@ class GoToAnalysis extends Component {
     return (
       <div style={mainContainer}>
         <div>
+          <div style={{transform: `translate(-10px, 307px)`}}>
+            <LoadingCounter
+              completedSteps={this.state.currStep}
+              totalSteps={this.state.numStages}
+            />
+          </div>
           <div id="loadingArt" ref={this._setRef.bind(this)} />
           {progressElements}
         </div>

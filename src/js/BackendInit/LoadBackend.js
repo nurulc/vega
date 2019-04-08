@@ -70,7 +70,7 @@ class LoadBackend extends Component {
         if (args.includes(completeMarker) || completeMarker === "none") {
           //Is this the last stage?
           if (numStages === this.state.hasCompleted.length + 1) {
-            //  this.setState({canContinue: true});
+            this.setState({canContinue: true});
           } else {
             var completeSet = [...this.state.hasCompleted, consoleStep];
             this.setState({hasCompleted: completeSet});
