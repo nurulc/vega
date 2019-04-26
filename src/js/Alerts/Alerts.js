@@ -17,32 +17,43 @@ class Alerts extends Component {
     super(props);
     this.state = {
       message: "",
-      open: false
+      open: false,
+      variant: "error"
     };
     this.timer = undefined;
   }
   componentDidMount() {
     if (isElectron()) {
-      ipcRenderer.on("error-WithMsg", (event, msg) => {
-        this.handleError(msg);
+      ipcRenderer.on("error-WithMsg", (event, msg, timeOut) => {
+        this.handleMessage(msg, timeOut, "error");
+      });
+      ipcRenderer.on("warning-WithMsg", (event, msg, timeOut) => {
+        this.handleMessage(msg, timeOut, "warning");
+      });
+      ipcRenderer.on("success-WithMsg", (event, msg, timeOut) => {
+        this.handleMessage(msg, timeOut, "success");
       });
     }
   }
-  componentWillUnMount() {
+  componentWillUnmount() {
+    this.setState({message: ""});
     clearTimeout(this.timer);
   }
 
-  handleError = msg => {
+  handleMessage = (msg, setTimeOut, variant) => {
+    var timeOut = setTimeOut ? setTimeOut : 1500;
     this.setState({
       open: true,
-      message: msg
+      message: msg,
+      variant: variant
     });
 
-    this.timer = setTimeout(() => {}, 1500);
+    this.timer = setTimeout(() => {}, timeOut);
   };
 
   onClose = () => {
     this.setState({
+      message: "",
       open: false
     });
   };
@@ -60,7 +71,7 @@ class Alerts extends Component {
             onClose={this.onClose}
             message={this.state.message}
             className={classes.margin}
-            variant="error"
+            variant={this.state.variant}
           />
         </Snackbar>
       </div>

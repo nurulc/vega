@@ -1,13 +1,17 @@
-import React, {Component} from "react";
-import {inputConfig, dashboardConfig} from "../../../resources/config.js";
 import isElectron from "is-electron";
+import React, {Component} from "react";
+
+import {inputConfig, dashboardConfig} from "../../../resources/config.js";
+import {getFileArgs} from "../utils/utils.js";
+
 import DropComponents from "./DropComponents.js";
 import SelectedFileListPanel from "./SelectedFileListPanel";
 import NavigationButton from "./NavigationButton.js";
-import {getFileArgs} from "../utils/utils.js";
 import Paper from "@material-ui/core/Paper";
+
 import * as d3 from "d3";
 import "../style.css";
+
 const ipcRenderer = window.ipcRenderer;
 
 const listStyles = {
@@ -51,23 +55,27 @@ class AddInput extends Component {
       proceedToMeta: setCanProceedToMeta
     };
   }
+
   canProceedToMeta = newPathList => {
     //Check if min number of files reached to continue
     var canContinueList = this.state.input.map(inputObj => {
       const filePaths = newPathList[inputObj.type];
       const minFileCount = inputConfig[inputObj.type].minFiles;
+
       return filePaths.length >= minFileCount;
     });
-    var canContinue = canContinueList.indexOf(false) > -1;
-    return !canContinue;
+    //If even one input type does not have the min amount of files do not continue
+    return !(canContinueList.indexOf(false) > -1);
   };
-  fileSelection = test => {
+
+  fileSelection = () => {
     var uploadButton = document.getElementById("fileSelectionButton");
+
     var args = getFileArgs(uploadButton.files);
     var currState = {...this.state, args};
     ipcRenderer.send("checkForFileErrors", currState);
-    //console.log(uploadButton.files);
   };
+
   onDelete = (fileName, type) => {
     this.setFileList(fileName, type, true);
   };
@@ -85,12 +93,9 @@ class AddInput extends Component {
           ? [file]
           : [...currStatePaths[type], file];
     }
-    //Set the new state
+    //Set the new file paths and check if can proceed
     this.setState({
-      filePaths: currStatePaths
-    });
-
-    this.setState({
+      filePaths: currStatePaths,
       proceedToMeta: this.canProceedToMeta(currStatePaths)
     });
   };
@@ -120,18 +125,21 @@ class AddInput extends Component {
           e.preventDefault();
           d3.select(holder).classed("onDragOver", false);
         };
-
+        //When files are dropped into the box
         holder.ondrop = e => {
           d3.select(holder).classed("onDragOver", false);
           e.preventDefault();
-          var args = getFileArgs(e, true);
+
+          var args = getFileArgs(e);
           var currState = {...this.state, args};
+          //Send to main process for file checking
           ipcRenderer.send("checkForFileErrors", currState);
         };
       });
     }
   }
   render() {
+    //Panel of selected files
     if (this.state.filePaths !== null) {
       var selectedFilePanelList = (
         <SelectedFileListPanel

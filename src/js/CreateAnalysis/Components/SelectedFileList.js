@@ -18,8 +18,6 @@ const classes = theme => ({
 });
 
 const SelectedFileList = ({key, classes, type, choosenFiles, onDelete}) => {
-  //const {classes, key} = props;
-  //const {type, choosenFiles} = {...props};
   const selectedPanel = choosenFiles.map((fileName, index) => {
     return (
       <Paper square={true} className={classes.root} elevation={1} key={index}>

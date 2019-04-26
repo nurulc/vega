@@ -1,0 +1,27 @@
+{"version": "3",
+"services": {
+  "db":
+    {
+    "container_name": "db",
+    "image": "shahcompbio/lyra-db:latest",
+    "ports":["9200:9200","9300:9300"],
+    "volumes":["esdata:/usr/share/elasticsearch/data"]
+    },
+  "graphql":
+    {
+    "depends_on":["db"],
+    "container_name": "graphql",
+    "image": "shahcompbio/lyra-graphql:latest",
+    "ports": ["4000:4000"],
+    "environment": ["HOST=db"]
+    },
+  "frontend":
+    {
+    "depends_on":["graphql"],
+    "container_name": "frontend",
+    "image": "shahcompbio/lyra-react:latest",
+    "ports": ["80:80"]
+    }
+  },
+"volumes":{"esdata":}
+}

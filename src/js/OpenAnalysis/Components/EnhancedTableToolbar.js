@@ -3,6 +3,7 @@ import classNames from "classnames";
 import Toolbar from "@material-ui/core/Toolbar";
 import Typography from "@material-ui/core/Typography";
 import IconButton from "@material-ui/core/IconButton";
+import DeleteIcon from "@material-ui/icons/Delete";
 import Fab from "@material-ui/core/Fab";
 import NextIcon from "@material-ui/icons/NavigateNext";
 import AddIcon from "@material-ui/icons/Add";
@@ -35,8 +36,16 @@ const toolbarStyles = theme => ({
   }
 });
 
-const EnhancedTableToolbar = ({selectedAnalysis, classes}) => {
-  var isSelected = selectedAnalysis && selectedAnalysis.hasOwnProperty("$loki");
+const EnhancedTableToolbar = ({
+  defaultBannerText,
+  deleteAnalysis,
+  goToExternalLink,
+  selectedAnalysis,
+  resetSelect,
+  classes
+}) => {
+  var isSelected =
+    selectedAnalysis && selectedAnalysis.hasOwnProperty("analysis_id");
   return (
     <Toolbar
       className={classNames(classes.root, {
@@ -46,20 +55,37 @@ const EnhancedTableToolbar = ({selectedAnalysis, classes}) => {
       <div className={classes.title}>
         {isSelected ? (
           <Typography color="inherit" variant="h4">
-            {selectedAnalysis.name} selected
+            {selectedAnalysis.title} selected
           </Typography>
         ) : (
           <Typography variant="h6" id="tableTitle">
-            All Analysis
+            {defaultBannerText}
           </Typography>
         )}
       </div>
       <div className={classes.spacer} />
       <div className={classes.actions}>
         {isSelected ? (
-          <IconButton aria-label="Next">
-            <NextIcon />
-          </IconButton>
+          <div style={{display: "flex"}}>
+            <IconButton
+              aria-label="Next"
+              onClick={() => {
+                resetSelect();
+                deleteAnalysis(selectedAnalysis);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+            <IconButton
+              aria-label="Next"
+              onClick={() => {
+                resetSelect();
+                goToExternalLink(selectedAnalysis.analysis_id);
+              }}
+            >
+              <NextIcon />
+            </IconButton>
+          </div>
         ) : (
           <NavLink to="/CreateAnalysis">
             <Fab size="small" aria-label="Add">
